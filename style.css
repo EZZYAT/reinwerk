@@ -1,16 +1,11 @@
 body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    background: #F5F7FA;
-    color: #2B2F36;
+    padding-top: 40px;
 }
 
-header {
-    background: #0B3A6A;
-    color: white;
-    padding: 40px 20px;
-    text-align: center;
+body {
+    background: linear-gradient(180deg, #f4f7fb 0%, #eaf0f7 100%);
 }
+
 
 .filters {
     padding: 20px;
@@ -86,4 +81,324 @@ footer {
     color: white;
     text-align: center;
     font-size: 12px;
+}
+
+/* ===== Modern background / glass ===== */
+:root {
+    --bg: #F5F7FA;
+    --ink: #1c2430;
+    --primary: #0B3A6A;
+    --glass: rgba(255, 255, 255, 0.55);
+    --stroke: rgba(255, 255, 255, 0.35);
+    --shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+}
+
+body {
+    background: radial-gradient(1200px 600px at 10% 10%, rgba(11, 58, 106, 0.18), transparent 55%),
+        radial-gradient(900px 500px at 90% 20%, rgba(255, 180, 0, 0.10), transparent 60%),
+        var(--bg);
+}
+
+.bg {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+}
+
+.orb {
+    position: absolute;
+    width: 520px;
+    height: 520px;
+    border-radius: 50%;
+    filter: blur(40px);
+    opacity: 0.55;
+    transform: translate3d(0, 0, 0);
+    animation: floaty 14s ease-in-out infinite;
+    mix-blend-mode: multiply;
+}
+
+.orb--1 {
+    top: -120px;
+    left: -120px;
+    background: rgba(11, 58, 106, 0.45);
+}
+
+.orb--2 {
+    top: 80px;
+    right: -140px;
+    background: rgba(255, 180, 0, 0.35);
+    animation-duration: 18s;
+}
+
+.orb--3 {
+    bottom: -180px;
+    left: 35%;
+    background: rgba(0, 160, 140, 0.30);
+    animation-duration: 22s;
+}
+
+@keyframes floaty {
+
+    0%,
+    100% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    50% {
+        transform: translate(30px, -20px) scale(1.06);
+    }
+}
+
+/* keep content above background */
+nav,
+header,
+section,
+footer {
+    position: relative;
+    z-index: 1;
+}
+
+/* ===== Beta banner ===== */
+.beta-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 999;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 20px;
+    backdrop-filter: blur(12px);
+    background: rgba(10, 20, 35, 0.65);
+    color: #fff;
+    font-size: 13px;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 10px;
+    border-radius: 999px;
+    background: rgba(255, 180, 0, 0.95);
+    color: #1b1b1b;
+    font-weight: 700;
+    font-size: 12px;
+    margin-right: 10px;
+}
+
+.beta-text {
+    font-size: 13px;
+    opacity: 0.95;
+}
+
+.beta-banner__left {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.beta-banner__right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.beta-cta {
+    text-decoration: none;
+    color: #0b0b0b;
+    background: #fff;
+    padding: 7px 12px;
+    border-radius: 10px;
+    font-weight: 700;
+}
+
+.beta-close {
+    border: 0;
+    background: transparent;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    opacity: 0.8;
+}
+
+.beta-close:hover {
+    opacity: 1;
+}
+
+/* ===== Hero polish ===== */
+header {
+    border-bottom-left-radius: 18px;
+    border-bottom-right-radius: 18px;
+    box-shadow: var(--shadow);
+}
+
+.hero-actions {
+    margin-top: 18px;
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-weight: 700;
+    transition: transform .15s ease, opacity .15s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+.btn-primary {
+    background: #fff;
+    color: var(--primary);
+}
+
+.btn-ghost {
+    background: rgba(255, 255, 255, 0.18);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+/* ===== Cards / glass sections ===== */
+.glass {
+    max-width: 1100px;
+    margin: 28px auto;
+    padding: 22px;
+    background: var(--glass);
+    border: 1px solid var(--stroke);
+    border-radius: 18px;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    box-shadow: var(--shadow);
+}
+
+.section h2 {
+    margin-top: 0;
+}
+
+.muted {
+    opacity: 0.82;
+}
+
+.tiny {
+    font-size: 12px;
+    opacity: 0.7;
+    margin-top: 10px;
+}
+
+.firm-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+    margin-top: 14px;
+}
+
+.firm-card {
+    background: rgba(255, 255, 255, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 16px;
+    padding: 16px;
+}
+
+.firm-card ul {
+    margin: 10px 0 0;
+    padding-left: 18px;
+}
+
+.firm-card li {
+    margin: 6px 0;
+}
+
+/* tighten empty space */
+footer {
+    margin-top: 30px;
+}
+
+.card {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.6s ease;
+}
+
+.card.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+}
+
+header {
+    background: linear-gradient(135deg, #0B3A6A 0%, #114a86 60%, #0f2f56 100%);
+    padding: 120px 20px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    color: white;
+    border-radius: 0 0 25px 25px;
+}
+
+header h1 {
+    font-size: 44px;
+    font-weight: 800;
+    margin-bottom: 14px;
+}
+
+header p {
+    font-size: 18px;
+    opacity: 0.9;
+}
+
+body {
+    background: linear-gradient(180deg, #f4f7fb 0%, #eaf0f7 100%);
+}
+
+.logo {
+    font-size: 22px;
+    font-weight: 700;
+    color: #0B3A6A;
+}
+
+.countdown {
+    margin-top: 40px;
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+}
+
+.countdown div {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(8px);
+    padding: 18px 22px;
+    border-radius: 12px;
+    text-align: center;
+    min-width: 80px;
+}
+
+.countdown span {
+    font-size: 28px;
+    font-weight: 700;
+    display: block;
+}
+
+.countdown small {
+    font-size: 13px;
+    opacity: 0.8;
 }

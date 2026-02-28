@@ -59,3 +59,50 @@ const example = [
     { key: "value" },
     { key: "value" }
 ];
+const closeBtn = document.getElementById("closeBanner");
+const betaBanner = document.getElementById("betaBanner");
+
+if (closeBtn && betaBanner) {
+    const hidden = localStorage.getItem("reinwerk_beta_banner_hidden");
+    if (hidden === "1") betaBanner.style.display = "none";
+
+    closeBtn.addEventListener("click", function () {
+        betaBanner.style.display = "none";
+        localStorage.setItem("reinwerk_beta_banner_hidden", "1");
+    });
+}
+function revealCards() {
+    const cards = document.querySelectorAll(".card");
+    const trigger = window.innerHeight * 0.85;
+
+    cards.forEach(card => {
+        const top = card.getBoundingClientRect().top;
+        if (top < trigger) {
+            card.classList.add("show");
+        }
+    });
+}
+
+window.addEventListener("scroll", revealCards);
+window.addEventListener("load", revealCards);
+// Set launch date (3 months from now)
+const launchDate = new Date();
+launchDate.setMonth(launchDate.getMonth() + 3);
+
+function updateCountdown() {
+    const now = new Date().getTime();
+    const distance = launchDate - now;
+
+    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+    document.getElementById("days").innerText = days;
+    document.getElementById("hours").innerText = hours;
+    document.getElementById("minutes").innerText = minutes;
+    document.getElementById("seconds").innerText = seconds;
+}
+
+setInterval(updateCountdown, 1000);
+updateCountdown();
