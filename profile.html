@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="de">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Profil – ReinWerk</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+    <!-- Background blobs -->
+    <div class="bg" aria-hidden="true">
+        <span class="blob b1"></span>
+        <span class="blob b2"></span>
+        <span class="blob b3"></span>
+        <span class="blob b4"></span>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="navbar" id="navbar">
+        <a class="logo" href="index.html">ReinWerk</a>
+
+        <button class="nav-toggle" id="navToggle" aria-label="Menu">
+            <span></span><span></span><span></span>
+        </button>
+
+        <div class="nav-links" id="navLinks">
+            <a href="index.html#companies">Unternehmen</a>
+            <a href="index.html#firmen">Für Firmen</a>
+            <a href="index.html#kontakt">Kontakt</a>
+        </div>
+    </nav>
+
+    <main class="container profile-page">
+        <a class="back-link" href="index.html#companies">← Zurück</a>
+
+        <!-- PROFILE CARD -->
+        <section class="profile-card glass" id="profileBox">
+            <div class="profile-left">
+                <h1 id="pName">Firma</h1>
+                <p class="muted" id="pAbout">Beschreibung...</p>
+
+                <div class="profile-meta">
+                    <span id="pDistrict">Stadtteil</span> ·
+                    <span id="pType">Typ</span> ·
+                    <span id="pTeam">Team</span> ·
+                    <span id="pPrice">Preis</span> ·
+                    <span>⭐ <span id="pRating">0.0</span></span>
+                </div>
+
+                <div class="profile-extra">
+                    <p><strong>Erfahrung:</strong> <span id="pExperience">—</span></p>
+                    <p><strong>Verfügbarkeit:</strong> <span id="pAvailability">—</span></p>
+                    <p><strong>Kontakt:</strong> <span id="pPhone">—</span></p>
+                </div>
+
+                <h3>Services</h3>
+                <ul class="services" id="pServices"></ul>
+
+                <p class="muted"><strong>Sprachen:</strong> <span id="pLang">—</span></p>
+
+                <a class="btn btn-primary" id="pCall" href="#">Anrufen</a>
+            </div>
+
+            <div class="profile-right">
+                <img id="pImage" class="profile-avatar" src="" alt="Team" />
+            </div>
+        </section>
+
+        <!-- BOOKING -->
+        <section class="glass booking-card">
+            <h2>Jetzt buchen</h2>
+
+            <form id="bookingForm">
+                <div class="form-row">
+                    <label>Datum</label>
+                    <input id="bDate" type="date" required />
+                </div>
+
+                <div class="form-row">
+                    <label>Uhrzeit</label>
+                    <input id="bTime" type="time" required />
+                </div>
+
+                <div class="form-row">
+                    <label>Adresse</label>
+                    <input id="bAddress" type="text" placeholder="Straße, Nr, PLZ" required />
+                </div>
+
+                <div class="form-row">
+                    <label>Notiz</label>
+                    <textarea id="bNote" rows="3" placeholder="z.B. Größe der Wohnung, Wünsche..."></textarea>
+                </div>
+
+                <button class="btn btn-primary" type="submit">Anfrage senden</button>
+                <p class="muted tiny" id="bookingMsg"></p>
+            </form>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
