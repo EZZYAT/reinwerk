@@ -1,0 +1,101 @@
+[
+  {
+    "id": 1,
+    "name": "Muster Clean Köln",
+    "email": "muster@reinwerk.com",
+    "password": "1234",
+    "district": "Ehrenfeld",
+    "price": "ab 89€",
+    "rating": 4.8,
+    "phone": "+49 221 111111",
+    "image": "/images/team1.jpg",
+    "type": "team",
+    "teamSize": 4,
+    "description": "Reinigungsservice für Wohnungen und Büros in Köln.",
+    "services": [
+      "Wohnung",
+      "Büro",
+      "Fenster",
+      "Grundreinigung"
+    ],
+    "languages": [
+      "DE",
+      "AR",
+      "EN"
+    ],
+    "experience": "3+ Jahre",
+    "availability": "Mo-Fr 10:00-16:00"
+  },
+  {
+    "id": 2,
+    "name": "RheinRein Service",
+    "email": "rhein@reinwerk.com",
+    "password": "5678",
+    "district": "Deutz",
+    "price": "ab 79€",
+    "rating": 4.6,
+    "phone": "+49 221 222222",
+    "image": "/images/team2.jpg",
+    "type": "team",
+    "teamSize": 6,
+    "description": "Professionelle Reinigung für Firmen und Hotels.",
+    "services": [
+      "Hotel",
+      "Büro",
+      "Praxis",
+      "Teppich"
+    ],
+    "languages": [
+      "DE",
+      "EN"
+    ],
+    "experience": "5+ Jahre",
+    "availability": "Mo-So 08:00-19:00"
+  },
+  {
+    "id": 3,
+    "name": "SauberPro Köln",
+    "email": "sauber@reinwerk.com",
+    "password": "9999",
+    "district": "Nippes",
+    "price": "ab 99€",
+    "rating": 4.9,
+    "phone": "+49 221 333333",
+    "image": "/images/team3.jpg",
+    "type": "team",
+    "teamSize": 5,
+    "description": "Premium Reinigung mit Qualitätsgarantie.",
+    "services": [
+      "Wohnung",
+      "Büro",
+      "Treppenhaus"
+    ],
+    "languages": [
+      "DE"
+    ],
+    "experience": "7+ Jahre",
+    "availability": "Mo-Fr 09:00-18:00"
+  },
+  {
+    "id": 1772899985334,
+    "name": "love clean",
+    "email": "ezzyat@gmail.com",
+    "password": "21231",
+    "district": "kalk",
+    "price": "ab 99",
+    "rating": 0,
+    "phone": "+3308827829",
+    "image": "/images/team3.jpg",
+    "type": "team",
+    "teamSize": 5,
+    "description": "welcomen bei uns in the bist clean in germane",
+    "services": [
+      "Reinigung HUNDUNG"
+    ],
+    "languages": [
+      "DE AR AT RU"
+    ],
+    "experience": "Neu",
+    "availability": "Nach Vereinbarung"
+  }
+]
