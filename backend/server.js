@@ -1,8 +1,21 @@
+const multer = require("multer");
+const path = require("path");
 const express = require("express");
 const cors = require("cors");
-const path = require("path");
 const fs = require("fs");
 const session = require("express-session");
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, "images/uploads");
+    },
+    filename: (req, file, cb) => {
+        const uniqueName = Date.now() + path.extname(file.originalname);
+        cb(null, uniqueName);
+    }
+});
+
+const upload = multer({ storage });
 
 const app = express();
 const PORT = 3000;
@@ -10,6 +23,7 @@ const PORT = 3000;
 // ===== MIDDLEWARE =====
 app.use(cors());
 app.use(express.json());
+app.use("/images", express.static("images"));
 
 app.use(session({
     secret: "reinwerk_secret_123",
@@ -20,13 +34,23 @@ app.use(session({
 // ===== STATIC FILES =====
 app.use(express.static(path.join(__dirname, "..")));
 
+app.post("/api/upload", upload.single("image"), (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ message: "No image uploaded" });
+    }
+
+    res.json({
+        image: "/images/uploads/" + req.file.filename
+    });
+});
+
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "..", "index.html"));
 });
 
 // ===== FILES =====
-const bookingsFile = path.join(__dirname, "bookings.json");
-const companiesFile = path.join(__dirname, "companies.json");
+const bookingsFile = path.join(__dirname, "data", "bookings.json");
+const companiesFile = path.join(__dirname, "data", "companies.json");
 
 // ===== READ / WRITE BOOKINGS =====
 function readBookings() {
