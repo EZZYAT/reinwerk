@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1772402524332,
+    "companyId": 2,
+    "date": "2026-04-08",
+    "time": "09:03",
+    "address": "jnkljlk",
+    "note": "jklkö,ö",
+    "createdAt": "2026-03-01T22:02:04.332Z"
+  },
+  {
+    "id": 1772403419863,
+    "companyId": 1,
+    "date": "2026-03-12",
+    "time": "19:54",
+    "address": "lord strasse ",
+    "note": "Zimmer Küche ",
+    "createdAt": "2026-03-01T22:16:59.863Z"
+  }
+]

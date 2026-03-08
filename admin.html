@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+    <div class="wave-bg">
+        <div class="wave one"></div>
+        <div class="wave two"></div>
+        <div class="wave three"></div>
+    </div>
+    <div class="dashboard-page">
+        <div class="dashboard-container">
+            <div class="dashboard-topbar">
+                <div>
+                    <h1>📋 Admin Dashboard</h1>
+                    <p>Manage all bookings from one place.</p>
+                </div>
+            </div>
+
+            <div class="dashboard-filters">
+                <input id="q" type="text" placeholder="Search address / note..." />
+                <input id="from" type="date" />
+                <input id="to" type="date" />
+                <button id="clear" class="btn">Clear</button>
+            </div>
+
+            <div id="stats" class="dashboard-stats"></div>
+
+            <div id="bookingList" class="dashboard-list"></div>
+        </div>
+    </div>
+
+    <script>
+        async function loadBookings() {
+            try {
+                const res = await fetch("/api/bookings");
+                const bookings = await res.json();
+
+                bookings.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+                const q = (document.getElementById("q").value || "").toLowerCase().trim();
+                const from = document.getElementById("from").value;
+                const to = document.getElementById("to").value;
+
+                let filtered = bookings;
+
+                if (q) {
+                    filtered = filtered.filter(b =>
+                        (b.address || "").toLowerCase().includes(q) ||
+                        (b.note || "").toLowerCase().includes(q)
+                    );
+                }
+
+                if (from) {
+                    filtered = filtered.filter(b => (b.date || "") >= from);
+                }
+
+                if (to) {
+                    filtered = filtered.filter(b => (b.date || "") <= to);
+                }
+
+                const statsEl = document.getElementById("stats");
+
+                const today = new Date();
+                const yyyy = today.getFullYear();
+                const mm = String(today.getMonth() + 1).padStart(2, "0");
+                const dd = String(today.getDate()).padStart(2, "0");
+                const todayStr = `${yyyy}-${mm}-${dd}`;
+
+                const day = today.getDay();
+                const diffToMonday = (day === 0 ? 6 : day - 1);
+                const monday = new Date(today);
+                monday.setDate(today.getDate() - diffToMonday);
+                const wyyyy = monday.getFullYear();
+                const wmm = String(monday.getMonth() + 1).padStart(2, "0");
+                const wdd = String(monday.getDate()).padStart(2, "0");
+                const weekStartStr = `${wyyyy}-${wmm}-${wdd}`;
+
+                const monthStartStr = `${yyyy}-${mm}-01`;
+
+                const totalCount = bookings.length;
+                const todayCount = bookings.filter(b => (b.date || "") === todayStr).length;
+                const weekCount = bookings.filter(b => (b.date || "") >= weekStartStr).length;
+                const monthCount = bookings.filter(b => (b.date || "") >= monthStartStr).length;
+
+                statsEl.innerHTML = `
+          <div class="stat-card">
+            <span>Total</span>
+            <strong>${totalCount}</strong>
+          </div>
+          <div class="stat-card">
+            <span>Today</span>
+            <strong>${todayCount}</strong>
+          </div>
+          <div class="stat-card">
+            <span>This week</span>
+            <strong>${weekCount}</strong>
+          </div>
+          <div class="stat-card">
+            <span>This month</span>
+            <strong>${monthCount}</strong>
+          </div>
+        `;
+
+                const list = document.getElementById("bookingList");
+                list.innerHTML = "";
+
+                const companiesRes = await fetch("/api/companies");
+                const companies = await companiesRes.json();
+
+                const companyMap = {};
+                companies.forEach(c => {
+                    companyMap[c.id] = c.name;
+                });
+
+                filtered.forEach(b => {
+                    const div = document.createElement("div");
+                    div.className = "dashboard-card";
+
+                    let statusClass = "status-pending";
+                    if (b.status === "Confirmed") statusClass = "status-confirmed";
+                    if (b.status === "Done") statusClass = "status-done";
+                    if (b.status === "Cancelled") statusClass = "status-cancelled";
+
+                    div.innerHTML = `
+            <div class="dashboard-card-header">
+              <h3>${companyMap[b.companyId] || ("ID " + b.companyId)}</h3>
+              <span class="status-badge ${statusClass}">${b.status || "Pending"}</span>
+            </div>
+
+            <div class="dashboard-card-body">
+              <p><strong>Date:</strong> ${b.date}</p>
+              <p><strong>Time:</strong> ${b.time}</p>
+              <p><strong>Address:</strong> ${b.address}</p>
+              <p><strong>Note:</strong> ${b.note || ""}</p>
+              <p><strong>Created:</strong> ${b.createdAt}</p>
+            </div>
+
+            <div class="dashboard-card-actions">
+              <a href="edit.html?id=${b.id}&from=admin" class="btn">✏️ Edit</a>
+              <button onclick="deleteBooking(${b.id})" class="btn">🗑 Delete</button>
+            </div>
+          `;
+
+                    list.appendChild(div);
+                });
+
+            } catch (err) {
+                console.error(err);
+                alert("فشل تحميل الحجوزات");
+            }
+        }
+
+        async function deleteBooking(id) {
+            if (!confirm("هل تريد حذف هذا الحجز؟")) return;
+
+            try {
+                const res = await fetch(`/api/bookings/${id}`, { method: "DELETE" });
+
+                if (!res.ok) {
+                    const txt = await res.text();
+                    console.error("DELETE failed:", txt);
+                    alert("فشل الحذف");
+                    return;
+                }
+
+                await loadBookings();
+            } catch (err) {
+                console.error(err);
+                alert("فشل الحذف");
+            }
+        }
+
+        document.getElementById("q").addEventListener("input", loadBookings);
+        document.getElementById("from").addEventListener("change", loadBookings);
+        document.getElementById("to").addEventListener("change", loadBookings);
+
+        document.getElementById("clear").addEventListener("click", () => {
+            document.getElementById("q").value = "";
+            document.getElementById("from").value = "";
+            document.getElementById("to").value = "";
+            loadBookings();
+        });
+
+        async function deleteCompany(id) {
+            if (!confirm("Delete this company?")) return;
+
+            const res = await fetch(`/api/admin/companies/${id}`, {
+                method: "DELETE"
+            });
+
+            if (!res.ok) {
+                alert("Delete failed");
+                return;
+            }
+
+            alert("Company deleted");
+            loadCompanies(); // أو loadBookings() حسب صفحتك
+        }
+
+        loadBookings();
+    </script>
+</body>
+
+</html>

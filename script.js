@@ -1,57 +1,9 @@
-// ===== DATA =====
-const companies = [
-    {
-        id: 1,
-        name: "Muster Clean Köln",
-        district: "Ehrenfeld",
-        price: "ab 89€",
-        rating: 4.8,
-        phone: "+49 221 111111",
-        image: "images/team1.jpg",
-        type: "team",
-        teamSize: 4,
-        description: "Reinigungsservice für Wohnungen und Büros in Köln.",
-        services: ["Wohnung", "Büro", "Fenster", "Grundreinigung"],
-        languages: ["DE", "AR", "EN"],
-        experience: "3+ Jahre",
-        availability: "Mo-Fr 10:00–16:00"
-    },
-    {
-        id: 2,
-        name: "RheinRein Service",
-        district: "Deutz",
-        price: "ab 79€",
-        rating: 4.6,
-        phone: "+49 221 222222",
-        image: "images/team2.jpg",
-        type: "team",
-        teamSize: 6,
-        description: "Professionelle Reinigung für Firmen und Hotels.",
-        services: ["Hotel", "Büro", "Praxis", "Teppich"],
-        languages: ["DE", "EN"],
-        experience: "5+ Jahre",
-        availability: "Mo-So 08:00–19:00"
-    },
-    {
-        id: 3,
-        name: "SauberPro Köln",
-        district: "Nippes",
-        price: "ab 99€",
-        rating: 4.9,
-        phone: "+49 221 333333",
-        image: "images/team3.jpg",
-        type: "person",
-        teamSize: 1,
-        description: "Einzelperson für Haushaltsreinigung und kleine Wohnungen.",
-        services: ["Wohnung", "Haushaltshilfe", "Fenster"],
-        languages: ["DE", "AR"],
-        experience: "2+ Jahre",
-        availability: "Mo-Fr 09:00–14:00"
-    }
-];
+const API_BASE = "http://localhost:3000";
+let companies = [];
 
-// ===== HELPERS =====
-function $(id) { return document.getElementById(id); }
+function $(id) {
+    return document.getElementById(id);
+}
 
 // ===== NAVBAR EFFECTS =====
 (function initNavbar() {
@@ -67,7 +19,7 @@ function $(id) { return document.getElementById(id); }
 
     if (navToggle && navLinks) {
         navToggle.addEventListener("click", () => navLinks.classList.toggle("open"));
-        navLinks.querySelectorAll("a").forEach(a => {
+        navLinks.querySelectorAll("a").forEach((a) => {
             a.addEventListener("click", () => navLinks.classList.remove("open"));
         });
     }
@@ -75,27 +27,34 @@ function $(id) { return document.getElementById(id); }
 
 // ===== COUNTDOWN =====
 (function initCountdown() {
-    const d = $("days"), h = $("hours"), m = $("minutes"), s = $("seconds");
+    const d = $("days");
+    const h = $("hours");
+    const m = $("minutes");
+    const s = $("seconds");
+
     if (!d || !h || !m || !s) return;
 
-    // target date (change if you want)
     const target = new Date();
     target.setDate(target.getDate() + 92);
 
-    function pad(n) { return String(n).padStart(2, "0"); }
+    const pad = (n) => String(n).padStart(2, "0");
 
     function tick() {
-        const now = new Date();
-        const diff = target - now;
+        const diff = target - new Date();
+
         if (diff <= 0) {
-            d.textContent = "00"; h.textContent = "00"; m.textContent = "00"; s.textContent = "00";
+            d.textContent = "00";
+            h.textContent = "00";
+            m.textContent = "00";
+            s.textContent = "00";
             return;
         }
-        const totalSec = Math.floor(diff / 1000);
-        const days = Math.floor(totalSec / (3600 * 24));
-        const hours = Math.floor((totalSec % (3600 * 24)) / 3600);
-        const mins = Math.floor((totalSec % 3600) / 60);
-        const secs = totalSec % 60;
+
+        const total = Math.floor(diff / 1000);
+        const days = Math.floor(total / (3600 * 24));
+        const hours = Math.floor((total % (3600 * 24)) / 3600);
+        const mins = Math.floor((total % 3600) / 60);
+        const secs = total % 60;
 
         d.textContent = pad(days);
         h.textContent = pad(hours);
@@ -107,112 +66,169 @@ function $(id) { return document.getElementById(id); }
     setInterval(tick, 1000);
 })();
 
-// ===== INDEX: RENDER CARDS + SEARCH =====
-(function initIndex() {
+// ===== INDEX: RENDER COMPANIES =====
+function renderCompanies(list) {
     const container = $("companies");
-    const searchInput = $("search");
-    if (!container || !searchInput) return;
+    if (!container) return;
 
-    function render(list) {
-        container.innerHTML = "";
+    container.innerHTML = "";
 
-        list.forEach(company => {
-            const card = document.createElement("div");
-            card.className = "card";
-            card.style.cursor = "pointer";
+    list.forEach((company) => {
+        const card = document.createElement("div");
+        card.className = "company-card";
 
-            // click on card opens profile
-            card.addEventListener("click", () => {
-                window.location.href = `profile.html?id=${company.id}`;
-            });
+        card.innerHTML = `
+      <div class="company-info">
+        <h3>${company.name}</h3>
 
-            card.innerHTML = `
-          <div class="card-content">
-            <div class="card-text">
-              <h3>${company.name}</h3>
-              <p>📍 ${company.district}</p>
-              <p>⭐ ${company.rating}</p>
-              <p><strong>${company.price}</strong></p>
-  
-              <div class="card-actions">
-                <a class="btn" href="profile.html?id=${company.id}" onclick="event.stopPropagation()">Profil</a>
-                <a class="btn" href="tel:${company.phone}" onclick="event.stopPropagation()">Anrufen</a>
-              </div>
-            </div>
-  
-            <div class="card-image">
-              <img src="${company.image}" alt="Team" />
-            </div>
-          </div>
-        `;
+        <div class="company-meta">
+          <div>📍 ${company.district}</div>
+          <div>⭐ ${company.rating}</div>
+          <div class="company-price">${company.price}</div>
+        </div>
 
-            container.appendChild(card);
-        });
+        <div class="company-actions">
+          <a class="btn btn-primary" href="profile.html?id=${company.id}">Profil</a>
+          <a class="btn" href="tel:${company.phone}">Anrufen</a>
+        </div>
+      </div>
+
+      <img class="company-thumb" src="${company.image}" alt="${company.name}">
+    `;
+
+        container.appendChild(card);
+    });
+}
+
+// ===== LOAD COMPANIES =====
+async function loadCompanies() {
+    try {
+        const res = await fetch(`${API_BASE}/api/companies`);
+        const data = await res.json();
+
+        companies = Array.isArray(data) ? data : [];
+
+        renderCompanies(companies);
+        initSearch();
+        initProfile();
+    } catch (error) {
+        console.error("Error loading companies:", error);
     }
+}
 
-    render(companies);
+// ===== SEARCH =====
+function initSearch() {
+    const searchInput = $("search");
+    const container = $("companies");
+
+    if (!searchInput || !container) return;
 
     searchInput.addEventListener("input", () => {
         const v = searchInput.value.toLowerCase().trim();
-        const filtered = companies.filter(c =>
-            c.name.toLowerCase().includes(v) ||
-            c.district.toLowerCase().includes(v)
-        );
-        render(filtered);
-    });
-})();
 
-// ===== PROFILE: FILL DATA + BOOKING =====
-(function initProfile() {
+        const filtered = companies.filter((c) =>
+            (c.name || "").toLowerCase().includes(v) ||
+            (c.district || "").toLowerCase().includes(v) ||
+            (c.services || []).join(" ").toLowerCase().includes(v)
+        );
+
+        renderCompanies(filtered);
+    });
+}
+
+// ===== PROFILE PAGE =====
+async function initProfile() {
     const profileBox = $("profileBox");
     if (!profileBox) return;
 
     const params = new URLSearchParams(window.location.search);
-    const id = Number(params.get("id"));
-    const company = companies.find(c => c.id === id);
+    const id = params.get("id");
 
-    if (!company) {
+    if (!id) {
         $("pName").textContent = "Firma nicht gefunden";
         $("pAbout").textContent = "Bitte zurück zur Liste.";
         return;
     }
 
-    $("pName").textContent = company.name;
-    $("pAbout").textContent = company.description;
+    try {
+        const res = await fetch(`/api/companies/${id}`);
+        if (!res.ok) throw new Error("Company not found");
 
-    $("pDistrict").textContent = company.district;
-    $("pType").textContent = (company.type === "team") ? "Team" : "Einzelperson";
-    $("pTeam").textContent = `Teamgröße: ${company.teamSize || 1}`;
-    $("pPrice").textContent = company.price;
-    $("pRating").textContent = company.rating;
+        const company = await res.json();
 
-    $("pExperience").textContent = company.experience || "—";
-    $("pAvailability").textContent = company.availability || "—";
-    $("pPhone").textContent = company.phone;
+        if ($("pName")) $("pName").textContent = company.name;
+        if ($("pAbout")) $("pAbout").textContent = company.description;
+        if ($("pDistrict")) $("pDistrict").textContent = company.district;
+        if ($("pType")) $("pType").textContent = company.type === "team" ? "Team" : "Einzelperson";
+        if ($("pTeam")) $("pTeam").textContent = `Teamgröße: ${company.teamSize || 1}`;
+        if ($("pTeamSize")) $("pTeamSize").textContent = company.teamSize || 1;
+        if ($("pPrice")) $("pPrice").textContent = company.price;
+        if ($("pRating")) $("pRating").textContent = company.rating;
+        if ($("pExperience")) $("pExperience").textContent = company.experience || "—";
+        if ($("pAvailability")) $("pAvailability").textContent = company.availability || "—";
+        if ($("pPhone")) $("pPhone").textContent = company.phone;
+        if ($("pLang")) $("pLang").textContent = (company.languages || []).join(", ");
 
-    const call = $("pCall");
-    call.href = `tel:${company.phone}`;
+        if ($("pCall")) $("pCall").href = `tel:${company.phone}`;
+        if ($("pImage")) $("pImage").src = company.image;
 
-    const img = $("pImage");
-    img.src = company.image;
+        const ul = $("pServices");
+        if (ul) {
+            ul.innerHTML = "";
+            (company.services || []).forEach((s) => {
+                const li = document.createElement("li");
+                li.textContent = s;
+                ul.appendChild(li);
+            });
+        }
 
-    const ul = $("pServices");
-    ul.innerHTML = "";
-    (company.services || []).forEach(s => {
-        const li = document.createElement("li");
-        li.textContent = s;
-        ul.appendChild(li);
-    });
+        // ===== BOOKING =====
+        const form = $("bookingForm");
+        const msg = $("bookingMsg");
 
-    $("pLang").textContent = (company.languages || []).join(", ");
+        if (form && msg) {
+            form.addEventListener("submit", async (e) => {
+                e.preventDefault();
 
-    // Booking form (demo)
-    const form = $("bookingForm");
-    const msg = $("bookingMsg");
+                const payload = {
+                    companyId: Number(company.id),
+                    date: $("bDate")?.value,
+                    time: $("bTime")?.value,
+                    address: $("bAddress")?.value,
+                    note: $("bNote")?.value
+                };
 
-    form.addEventListener("submit", (e) => {
-        e.preventDefault();
-        msg.textContent = "✅ Anfrage gesendet (Demo). Wir melden uns bald!";
-        form.reset();
-    });
-})();
+                try {
+                    const bookingRes = await fetch(`${API_BASE}/api/bookings`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const data = await bookingRes.json().catch(() => ({}));
+
+                    if (!bookingRes.ok) {
+                        msg.textContent = "❌ " + (data.message || "حدث خطأ أثناء إرسال الحجز");
+                        return;
+                    }
+
+                    msg.textContent = "✅ تم إرسال طلب الحجز بنجاح";
+                    form.reset();
+                } catch (err) {
+                    msg.textContent = "❌ حدث خطأ أثناء إرسال الحجز";
+                    console.error(err);
+                }
+            });
+        }
+
+    } catch (e) {
+        if ($("pName")) $("pName").textContent = "Firma nicht gefunden";
+        if ($("pAbout")) $("pAbout").textContent = "Bitte zurück zur Liste.";
+        console.error(e);
+    }
+}
+
+// ===== START =====
+loadCompanies();

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Register Company</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="wave-bg">
+        <div class="wave one"></div>
+        <div class="wave two"></div>
+        <div class="wave three"></div>
+    </div>
+
+    <div class="auth-page">
+        <div class="auth-card register-card">
+            <div class="auth-header">
+                <h1>Create Company Account</h1>
+                <p>
+                    Join ReinWerk and appear with other cleaning companies in Cologne.
+                </p>
+            </div>
+
+            <div class="register-note">
+                <strong>Example:</strong>
+                Muster Clean Köln · muster@reinwerk.com · Ehrenfeld · +49 221 111111
+            </div>
+
+            <form id="registerForm" class="auth-form">
+
+                <div class="form-row">
+                    <div>
+                        <label for="name">Company Name</label>
+                        <input id="name" type="text" required placeholder="Example: Muster Clean Köln">
+                    </div>
+
+                    <div>
+                        <label for="district">District</label>
+                        <input id="district" type="text" required placeholder="Example: Ehrenfeld">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div>
+                        <label for="email">Email</label>
+                        <input id="email" type="email" required placeholder="Example: muster@reinwerk.com">
+                    </div>
+
+                    <div>
+                        <label for="phone">Phone</label>
+                        <input id="phone" type="text" required placeholder="Example: +49 221 111111">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div>
+                        <label for="password">Password</label>
+                        <input id="password" type="password" required minlength="4" placeholder="At least 4 characters">
+                    </div>
+
+                    <div>
+                        <label for="teamSize">Team Size</label>
+                        <input id="teamSize" type="number" min="1" placeholder="Example: 4">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div>
+                        <label for="price">Starting Price</label>
+                        <input id="price" type="text" placeholder='Example: ab 89€'>
+                    </div>
+
+                    <div>
+                        <label for="languages">Languages</label>
+                        <input id="languages" type="text" placeholder="Example: DE, EN, AR">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="services">Services</label>
+                    <input id="services" type="text" placeholder="Example: Wohnung, Büro, Fenster">
+                    <small class="field-help">Separate services with commas.</small>
+                </div>
+
+                <div>
+                    <label for="description">Description</label>
+                    <textarea id="description" rows="4"
+                        placeholder="Example: Professional cleaning service for apartments, offices and windows in Cologne."></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary auth-btn">Create Account</button>
+
+                <div class="register-links">
+                    <a href="login.html" class="auth-link">Back to Login</a>
+                    <a href="reset-password.html" class="auth-link">Reset Password</a>
+                </div>
+
+                <p id="msg" class="auth-msg"></p>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById("registerForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const payload = {
+                name: document.getElementById("name").value.trim(),
+                email: document.getElementById("email").value.trim(),
+                password: document.getElementById("password").value.trim(),
+                district: document.getElementById("district").value.trim(),
+                phone: document.getElementById("phone").value.trim(),
+                description: document.getElementById("description").value.trim(),
+                teamSize: Number(document.getElementById("teamSize").value || 1),
+                price: document.getElementById("price").value.trim() || "ab 0€",
+                languages: document.getElementById("languages").value
+                    .split(",")
+                    .map(v => v.trim())
+                    .filter(Boolean),
+                services: document.getElementById("services").value
+                    .split(",")
+                    .map(v => v.trim())
+                    .filter(Boolean)
+            };
+
+            const msg = document.getElementById("msg");
+
+            const res = await fetch("/api/register-company", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                msg.textContent = "❌ " + (data.message || "Register failed");
+                msg.className = "auth-msg error";
+                return;
+            }
+
+            msg.textContent = "✅ Account created successfully";
+            msg.className = "auth-msg success";
+
+            setTimeout(() => {
+                window.location.href = "login.html";
+            }, 1000);
+        });
+    </script>
+
+</body>
+
+</html>

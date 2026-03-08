@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Companies</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    
+    <div class="wave-bg">
+        <div class="wave one"></div>
+        <div class="wave two"></div>
+        <div class="wave three"></div>
+    </div>
+
+    <h1>Companies</h1>
+
+    <div id="companyList"></div>
+
+    <script>
+
+        async function loadCompanies() {
+
+            const res = await fetch("/api/companies");
+            const companies = await res.json();
+
+            const container = document.getElementById("companyList");
+            container.innerHTML = "";
+
+            companies.forEach(c => {
+
+                const div = document.createElement("div");
+                div.className = "company-card";
+
+                div.innerHTML = `
+<h3>${c.name}</h3>
+
+<p>📍 ${c.district}</p>
+<p>📞 ${c.phone}</p>
+
+<button onclick="deleteCompany(${c.id})" class="btn">
+Delete Company
+</button>
+`;
+
+                container.appendChild(div);
+
+            });
+
+        }
+
+        async function deleteCompany(id) {
+
+            if (!confirm("Delete this company?")) return;
+
+            await fetch("/api/admin/companies/" + id, {
+                method: "DELETE"
+            });
+
+            loadCompanies();
+
+        }
+
+        loadCompanies();
+
+    </script>
+
+</body>
+
+</html>

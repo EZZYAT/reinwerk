@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Edit Company Profile</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+    <div class="wave-bg">
+        <div class="wave one"></div>
+        <div class="wave two"></div>
+        <div class="wave three"></div>
+    </div>
+
+    <div class="container" style="padding-top:24px">
+        <div class="dashboard-topbar">
+            <a href="index.html" class="logo">ReinWerk</a>
+
+            <div class="dashboard-card-actions">
+                <a href="company.html" class="btn">My Dashboard</a>
+                <button id="logoutBtn" class="btn">Logout</button>
+                <button id="deleteAccountBtn" class="btn">Delete Account</button>
+            </div>
+        </div>
+
+        <div class="page-card glass company-profile-layout">
+
+            <div class="company-profile-form-side">
+                <h1 class="page-title">Edit Company Profile</h1>
+                <p class="page-subtitle">Update your company data as it appears on ReinWerk.</p>
+
+                <form id="profileForm" class="form-grid">
+
+                    <div>
+                        <label>Company Name</label>
+                        <input id="name" type="text" required>
+                    </div>
+
+                    <div>
+                        <label>District</label>
+                        <input id="district" type="text" required>
+                    </div>
+
+                    <div>
+                        <label>Email</label>
+                        <input id="email" type="email" required>
+                    </div>
+
+                    <div>
+                        <label>Phone</label>
+                        <input id="phone" type="text" required>
+                    </div>
+
+                    <div>
+                        <label>Price</label>
+                        <input id="price" type="text" placeholder="ab 89€">
+                    </div>
+
+                    <div>
+                        <label>Team Size</label>
+                        <input id="teamSize" type="number" min="1">
+                    </div>
+
+                    <div class="full-width">
+                        <label>Languages</label>
+                        <input id="languages" type="text" placeholder="DE, EN, AR">
+                    </div>
+
+                    <div class="full-width">
+                        <label>Services</label>
+                        <input id="services" type="text" placeholder="Wohnung, Büro, Fenster">
+                    </div>
+
+                    <div class="full-width">
+                        <label>Description</label>
+                        <textarea id="description" rows="4"></textarea>
+                    </div>
+
+                    <div class="actions">
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                        <a href="company.html" class="btn">Back</a>
+                    </div>
+
+                    <p id="msg"></p>
+                </form>
+            </div>
+
+            <div class="company-profile-image-side">
+                <div class="profile-image-box">
+                    <img id="profilePreview" src="" class="company-profile-preview" alt="company image"
+                        style="display:none;" />
+                </div>
+
+                <div class="form-grid" style="margin-top:16px">
+                    <div>
+                        <label>Profile Image URL / Path</label>
+
+                        <input id="image" type="text" placeholder="https://... or /images/team1.jpg">
+
+                        <small class="field-help">
+                            Example: https://example.com/image.jpg or /images/team1.jpg
+                        </small>
+                    </div>
+
+                    <button type="button" id="previewBtn" class="btn">Preview Image</button>
+                </div>
+                <div>
+                    <label>Upload Image from Computer</label>
+                    <input id="imageFile" type="file" accept="image/*">
+                    <small class="field-help">Choose an image from your computer.</small>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        async function loadMe() {
+            const res = await fetch("/api/company/me");
+
+            if (!res.ok) {
+                window.location.href = "login.html";
+                return;
+            }
+
+            const company = await res.json();
+
+            document.getElementById("name").value = company.name || "";
+            document.getElementById("district").value = company.district || "";
+            document.getElementById("email").value = company.email || "";
+            document.getElementById("phone").value = company.phone || "";
+            document.getElementById("price").value = company.price || "";
+            document.getElementById("teamSize").value = company.teamSize || 1;
+            document.getElementById("languages").value = (company.languages || []).join(", ");
+            document.getElementById("services").value = (company.services || []).join(", ");
+            document.getElementById("description").value = company.description || "";
+            document.getElementById("image").value = company.image || "";
+
+            const preview = document.getElementById("profilePreview");
+            if (company.image) {
+                preview.src = company.image;
+                preview.style.display = "block";
+            } else {
+                preview.src = "";
+                preview.style.display = "none";
+            }
+        }
+
+        document.getElementById("previewBtn").addEventListener("click", () => {
+            let value = document.getElementById("image").value.trim();
+            const preview = document.getElementById("profilePreview");
+
+            if (!value) {
+                preview.src = "";
+                preview.style.display = "none";
+                return;
+            }
+
+            if (!value.startsWith("/") && !value.startsWith("http")) {
+                value = "/" + value;
+            }
+
+            document.getElementById("image").value = value;
+            preview.src = value;
+            preview.style.display = "block";
+        });
+
+        document.getElementById("imageFile").addEventListener("change", (e) => {
+
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+
+            reader.onload = function (event) {
+
+                const base64Image = event.target.result;
+
+                document.getElementById("image").value = base64Image;
+
+                const preview = document.getElementById("profilePreview");
+                preview.src = base64Image;
+                preview.style.display = "block";
+            };
+
+            reader.readAsDataURL(file);
+
+        });
+
+        document.getElementById("profilePreview").addEventListener("error", () => {
+            document.getElementById("profilePreview").src = "";
+            document.getElementById("profilePreview").style.display = "none";
+        });
+
+        document.getElementById("profileForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const rawImage = document.getElementById("image").value.trim();
+            let fixedImage = rawImage;
+
+            if (
+                fixedImage &&
+                !fixedImage.startsWith("/") &&
+                !fixedImage.startsWith("http") &&
+                !fixedImage.startsWith("data:image")
+            ) {
+                fixedImage = "/" + fixedImage;
+            }
+
+            const payload = {
+                name: document.getElementById("name").value.trim(),
+                district: document.getElementById("district").value.trim(),
+                email: document.getElementById("email").value.trim(),
+                phone: document.getElementById("phone").value.trim(),
+                price: document.getElementById("price").value.trim(),
+                teamSize: Number(document.getElementById("teamSize").value || 1),
+                languages: document.getElementById("languages").value
+                    .split(",")
+                    .map(v => v.trim())
+                    .filter(Boolean),
+                services: document.getElementById("services").value
+                    .split(",")
+                    .map(v => v.trim())
+                    .filter(Boolean),
+                description: document.getElementById("description").value.trim(),
+                image: fixedImage
+            };
+
+            const msg = document.getElementById("msg");
+
+            try {
+                const res = await fetch("/api/company/profile", {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    msg.textContent = "❌ " + (data.message || "Update failed");
+                    return;
+                }
+
+                msg.textContent = "✅ Profile updated successfully";
+
+                const preview = document.getElementById("profilePreview");
+                if (payload.image) {
+                    preview.src = payload.image;
+                    preview.style.display = "block";
+                } else {
+                    preview.src = "";
+                    preview.style.display = "none";
+                }
+            } catch (err) {
+                console.error(err);
+                msg.textContent = "❌ Update failed";
+            }
+        });
+
+        document.getElementById("logoutBtn").addEventListener("click", async () => {
+            await fetch("/api/logout", { method: "POST" });
+            window.location.href = "login.html";
+        });
+
+        document.getElementById("deleteAccountBtn").addEventListener("click", async () => {
+            if (!confirm("Delete your account permanently?")) return;
+
+            const res = await fetch("/api/company/account", {
+                method: "DELETE"
+            });
+
+            if (!res.ok) {
+                alert("Delete failed");
+                return;
+            }
+
+            window.location.href = "login.html";
+        });
+
+        loadMe();
+    </script>
+</body>
+
+</html>

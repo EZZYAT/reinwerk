@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Booking</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="wave-bg">
+        <div class="wave one"></div>
+        <div class="wave two"></div>
+        <div class="wave three"></div>
+    </div>
+
+    <div class="container">
+        <div class="page-card glass">
+            <h1 class="page-title">Edit Booking</h1>
+            <p class="page-subtitle">Update booking details professionally.</p>
+
+            <form id="editForm" class="form-grid">
+                <div>
+                    <label>Date</label>
+                    <input id="eDate" type="date" required>
+                </div>
+
+                <div>
+                    <label>Time</label>
+                    <input id="eTime" type="time" required>
+                </div>
+
+                <div>
+                    <label>Address</label>
+                    <input id="eAddress" type="text" required>
+                </div>
+
+                <div>
+                    <label>Note</label>
+                    <textarea id="eNote" rows="5"></textarea>
+                </div>
+
+                <div class="actions">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                    <a id="backLink" href="admin.html" class="btn">Back</a>
+                </div>
+
+                <p id="msg"></p>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get("id");
+        const from = params.get("from");
+
+        const form = document.getElementById("editForm");
+        const msg = document.getElementById("msg");
+
+        const eDate = document.getElementById("eDate");
+        const eTime = document.getElementById("eTime");
+        const eAddress = document.getElementById("eAddress");
+        const eNote = document.getElementById("eNote");
+
+        if (from === "company") {
+            document.getElementById("backLink").href = "company.html";
+        }
+
+        async function load() {
+            if (!id) {
+                msg.textContent = "Missing id";
+                return;
+            }
+
+            const res = await fetch(`/api/bookings/${id}`);
+
+            if (!res.ok) {
+                msg.textContent = "Booking not found";
+                return;
+            }
+
+            const booking = await res.json();
+
+            eDate.value = booking.date || "";
+            eTime.value = booking.time || "";
+            eAddress.value = booking.address || "";
+            eNote.value = booking.note || "";
+        }
+
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const payload = {
+                date: eDate.value,
+                time: eTime.value,
+                address: eAddress.value,
+                note: eNote.value
+            };
+
+            const res = await fetch(`/api/bookings/${id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!res.ok) {
+                msg.textContent = "❌ Update failed";
+                return;
+            }
+
+            msg.textContent = "✅ Saved";
+
+            setTimeout(() => {
+                if (from === "company") {
+                    window.location.href = "company.html";
+                } else {
+                    window.location.href = "admin.html";
+                }
+            }, 800);
+        });
+
+        load();
+    </script>
+
+</body>
+
+</html>

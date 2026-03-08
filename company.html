@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Company Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="wave-bg">
+        <div class="wave one"></div>
+        <div class="wave two"></div>
+        <div class="wave three"></div>
+    </div>
+
+    <div class="dashboard-page">
+        <div class="dashboard-container">
+
+            <div class="dashboard-topbar">
+                <a href="index.html" class="logo">ReinWerk</a>
+
+                <div class="dashboard-card-actions">
+                    <a href="company-profile.html" class="btn">Profile</a>
+                    <button id="logoutBtn" class="btn">Logout</button>
+                    <button id="deleteAccountBtn" class="btn">Delete Account</button>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 18px;">
+                <h1 id="companyTitle">My Bookings</h1>
+                <p style="color:#64748b;">Manage your company bookings here.</p>
+            </div>
+
+            <div id="bookingList" class="dashboard-list"></div>
+
+        </div>
+    </div>
+
+    <script>
+        async function checkLogin() {
+            const res = await fetch("/api/company/me");
+
+            if (!res.ok) {
+                window.location.href = "login.html";
+                return false;
+            }
+
+            const company = await res.json();
+            document.getElementById("companyTitle").textContent = company.name + " Bookings";
+            return true;
+        }
+
+        function getStatusClass(status) {
+            if (status === "Confirmed") return "status-confirmed";
+            if (status === "Done") return "status-done";
+            if (status === "Cancelled") return "status-cancelled";
+            return "status-pending";
+        }
+
+        async function loadBookings() {
+            const res = await fetch("/api/company/bookings");
+
+            if (!res.ok) {
+                alert("Failed to load company bookings");
+                return;
+            }
+
+            const bookings = await res.json();
+            const list = document.getElementById("bookingList");
+            list.innerHTML = "";
+
+            if (!bookings.length) {
+                list.innerHTML = `
+          <div class="dashboard-card">
+            <p>No bookings yet.</p>
+          </div>
+        `;
+                return;
+            }
+
+            bookings.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+            bookings.forEach(b => {
+                const div = document.createElement("div");
+                div.className = "dashboard-card";
+
+                div.innerHTML = `
+          <div class="dashboard-card-header">
+            <h3>Booking #${b.id}</h3>
+            <span class="status-badge ${getStatusClass(b.status)}">${b.status || "Pending"}</span>
+          </div>
+
+          <div class="dashboard-card-body">
+            <p><strong>Date:</strong> ${b.date}</p>
+            <p><strong>Time:</strong> ${b.time}</p>
+            <p><strong>Address:</strong> ${b.address}</p>
+            <p><strong>Note:</strong> ${b.note || ""}</p>
+            <p><strong>Created:</strong> ${b.createdAt}</p>
+          </div>
+
+          <div class="dashboard-card-actions">
+            <a href="edit.html?id=${b.id}&from=company" class="btn">✏️ Edit</a>
+            <button onclick="deleteBooking(${b.id})" class="btn">🗑 Delete</button>
+          </div>
+        `;
+
+                list.appendChild(div);
+            });
+        }
+
+        async function deleteBooking(id) {
+            if (!confirm("Delete this booking?")) return;
+
+            const res = await fetch("/api/bookings/" + id, {
+                method: "DELETE"
+            });
+
+            if (!res.ok) {
+                alert("Delete failed");
+                return;
+            }
+
+            loadBookings();
+        }
+
+        document.getElementById("logoutBtn").addEventListener("click", async () => {
+            await fetch("/api/logout", { method: "POST" });
+            window.location.href = "login.html";
+        });
+
+        document.getElementById("deleteAccountBtn").addEventListener("click", async () => {
+            if (!confirm("Delete your account permanently?")) return;
+
+            const res = await fetch("/api/company/account", {
+                method: "DELETE"
+            });
+
+            if (!res.ok) {
+                alert("Delete failed");
+                return;
+            }
+
+            window.location.href = "login.html";
+        });
+
+        (async () => {
+            const ok = await checkLogin();
+            if (ok) loadBookings();
+        })();
+    </script>
+</body>
+
+</html>

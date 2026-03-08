@@ -1,87 +1,94 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="de">
 
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>ReinWerk - Reinigungsfirmen</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ReinWerk – Reinigungsfirmen in Köln</title>
     <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
-    <!-- Background blobs -->
-    <div class="bg" aria-hidden="true">
-        <span class="blob b1"></span>
-        <span class="blob b2"></span>
-        <span class="blob b3"></span>
-        <span class="blob b4"></span>
+
+    <div class="wave-bg">
+        <div class="wave one"></div>
+        <div class="wave two"></div>
+        <div class="wave three"></div>
     </div>
 
-    <!-- Navbar -->
-    <nav class="navbar" id="navbar">
-        <a class="logo" href="index.html">ReinWerk</a>
+    <!-- ===== NAVBAR ===== -->
+    <header class="navbar" id="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">ReinWerk</a>
 
-        <button class="nav-toggle" id="navToggle" aria-label="Menu">
-            <span></span><span></span><span></span>
-        </button>
+            <div class="nav-search">
+                <input id="search" type="text" placeholder="Stadt / Bezirk suchen..." class="nav-search-input" />
+            </div>
 
-        <div class="nav-links" id="navLinks">
-            <a href="#companies">Unternehmen</a>
-            <a href="#firmen">Für Firmen</a>
-            <a href="#kontakt">Kontakt</a>
+            <nav class="nav-links" id="navLinks">
+
+                <a href="companies.html">Unternehmen</a>
+
+                <a href="for-companies.html">Für Firmen</a>
+
+                <a href="kontakt.html">Kontakt</a>
+
+                <a href="login.html" class="login-btn">Company Login</a>
+
+            </nav>
+            <button class="nav-toggle" id="navToggle" aria-label="Menu">☰</button>
         </div>
-    </nav>
+    </header>
 
     <main class="container">
-        <!-- HERO -->
-        <header class="hero glass">
-            <h1>Reinigungsfirmen in Köln vergleichen</h1>
-            <p class="muted">Finden Sie geprüfte Reinigungsunternehmen in Köln.</p>
 
-            <div class="hero-actions">
-                <a class="btn btn-primary" href="#companies">Unternehmen entdecken</a>
-                <a class="btn btn-ghost" href="#firmen">Für Firmen: 3 Monate gratis</a>
+        <!-- ===== HERO ===== -->
+        <section class="hero glass">
+            <div class="hero-content">
+                <h1>Reinigungsfirmen in Köln vergleichen</h1>
+                <p>Finden Sie geprüfte Reinigungsunternehmen in Köln.</p>
+
+                <div class="hero-actions">
+                    <a href="#companies" class="btn btn-primary">Unternehmen entdecken</a>
+                    <a href="#firmen" class="btn">Für Firmen: 3 Monate gratis</a>
+                </div>
+
+                <div class="countdown">
+                    <div class="count-box">
+                        <span id="days">00</span>
+                        <small>Days</small>
+                    </div>
+                    <div class="count-box">
+                        <span id="hours">00</span>
+                        <small>Hours</small>
+                    </div>
+                    <div class="count-box">
+                        <span id="minutes">00</span>
+                        <small>Min</small>
+                    </div>
+                    <div class="count-box">
+                        <span id="seconds">00</span>
+                        <small>Sec</small>
+                    </div>
+                </div>
             </div>
-
-            <div class="countdown">
-                <div class="time">
-                    <span id="days">00</span>
-                    <small>Days</small>
-                </div>
-                <div class="time">
-                    <span id="hours">00</span>
-                    <small>Hours</small>
-                </div>
-                <div class="time">
-                    <span id="minutes">00</span>
-                    <small>Min</small>
-                </div>
-                <div class="time">
-                    <span id="seconds">00</span>
-                    <small>Sec</small>
-                </div>
-            </div>
-        </header>
-
-        <!-- Search -->
-        <section class="filters">
-            <input type="text" id="search" placeholder="Unternehmen suchen..." />
         </section>
 
-        <!-- Cards -->
-        <section id="companies" class="companies">
-            <!-- JS will render cards here -->
+
+        <!-- ===== COMPANIES ===== -->
+        <section id="companies-section">
+            <div id="companies" class="companies-grid"></div>
         </section>
+        <!-- ===== FOR COMPANIES ===== -->
+        <section class="info-section glass" id="firmen">
+            <div class="info-header">
+                <h2>Für Reinigungsfirmen in Köln</h2>
+                <p>Wir starten im Beta-Modus. Sichern Sie sich jetzt ein Profil – <strong>3 Monate kostenlos.</strong>
+                </p>
+            </div>
 
-        <!-- For companies -->
-        <section id="firmen" class="glass section">
-            <h2>Für Reinigungsfirmen in Köln</h2>
-            <p class="muted">
-                Wir starten im Beta-Modus. Sichern Sie sich jetzt ein Profil – <strong>3 Monate kostenlos</strong>.
-            </p>
-
-            <div class="firm-grid">
-                <div class="firm-card">
+            <div class="info-grid">
+                <div class="info-card">
                     <h3>Was Sie bekommen</h3>
                     <ul>
                         <li>Eigene Profilkarte mit Kontakt</li>
@@ -90,29 +97,24 @@
                     </ul>
                 </div>
 
-                <div class="firm-card">
+                <div class="info-card">
                     <h3>Jetzt anmelden</h3>
-                    <p class="muted">Tragen Sie Ihre Firma ein – wir melden uns zurück.</p>
-                    <a class="btn btn-primary"
-                        href="mailto:deinemail@gmail.com?subject=ReinWerk%20Firma%20eintragen&body=Firmenname:%20%0AStadtteil:%20%0ATelefon:%20%0AWebsite:%20">
-                        Firma eintragen per E-Mail
-                    </a>
-                    <p class="tiny muted">*Später ersetzen wir das durch ein Formular.</p>
+                    <p>Tragen Sie Ihre Firma ein – wir melden uns zurück.</p>
+                    <a href="login.html" class="btn btn-primary">Firma eintragen / Login</a>
+                    <p class="tiny-note">Später ersetzen wir das durch ein Formular.</p>
                 </div>
             </div>
         </section>
 
-        <!-- Contact -->
-        <section id="kontakt" class="glass section">
+        <!-- ===== CONTACT ===== -->
+        <section class="contact-section glass" id="kontakt">
             <h2>Kontakt</h2>
-            <p class="muted">Fragen? Schreiben Sie uns: <strong>deinemail@gmail.com</strong></p>
+            <p>Fragen oder Interesse? Schreiben Sie uns eine Nachricht.</p>
+            <p><strong>E-Mail:</strong> info@reinwerk.de</p>
+            <p><strong>Ort:</strong> Köln, Deutschland</p>
         </section>
-    </main>
 
-    <footer class="footer">
-        <p>© 2026 ReinWerk – Plattform für Reinigungsunternehmen in Köln</p>
-        <p class="muted">ReinWerk ist unabhängig. Verträge direkt zwischen Kunde & Dienstleister.</p>
-    </footer>
+    </main>
 
     <script src="script.js"></script>
 </body>

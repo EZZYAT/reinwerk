@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Company Login</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="wave-bg">
+        <div class="wave one"></div>
+        <div class="wave two"></div>
+        <div class="wave three"></div>
+    </div>
+
+    <div class="auth-page">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1>Company Login</h1>
+                <p>Log in to manage your bookings and company dashboard.</p>
+            </div>
+
+            <form id="loginForm" class="auth-form">
+                <label>Email</label>
+                <input id="email" type="email" required placeholder="Enter company email">
+
+                <label>Password</label>
+                <input id="password" type="password" required placeholder="Enter password">
+
+                <button type="submit" class="btn btn-primary auth-btn">Login</button>
+
+                <a href="reset-password.html" class="auth-link">Reset Password</a>
+                <a href="register.html" class="auth-link">Create Company Account</a>
+
+                <p id="msg" class="auth-msg"></p>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById("loginForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value;
+            const msg = document.getElementById("msg");
+
+            const res = await fetch("/api/login-company", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ email, password })
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                msg.textContent = "❌ " + (data.message || "Login failed");
+                msg.className = "auth-msg error";
+                return;
+            }
+
+            msg.textContent = "✅ Logged in";
+            msg.className = "auth-msg success";
+
+            window.location.href = "company.html";
+        });
+    </script>
+
+</body>
+
+</html>

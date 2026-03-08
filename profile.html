@@ -1,103 +1,91 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="de">
 
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Profil – ReinWerk</title>
     <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
-    <!-- Background blobs -->
-    <div class="bg" aria-hidden="true">
-        <span class="blob b1"></span>
-        <span class="blob b2"></span>
-        <span class="blob b3"></span>
-        <span class="blob b4"></span>
+
+    <div class="wave-bg">
+        <div class="wave one"></div>
+        <div class="wave two"></div>
+        <div class="wave three"></div>
     </div>
 
-    <!-- Navbar -->
-    <nav class="navbar" id="navbar">
-        <a class="logo" href="index.html">ReinWerk</a>
+    <div class="container profile-page">
 
-        <button class="nav-toggle" id="navToggle" aria-label="Menu">
-            <span></span><span></span><span></span>
-        </button>
+        <a href="index.html" class="back-link">← Zurück</a>
 
-        <div class="nav-links" id="navLinks">
-            <a href="index.html#companies">Unternehmen</a>
-            <a href="index.html#firmen">Für Firmen</a>
-            <a href="index.html#kontakt">Kontakt</a>
-        </div>
-    </nav>
-
-    <main class="container profile-page">
-        <a class="back-link" href="index.html#companies">← Zurück</a>
-
-        <!-- PROFILE CARD -->
+        <!-- Company Profile Card -->
         <section class="profile-card glass" id="profileBox">
             <div class="profile-left">
-                <h1 id="pName">Firma</h1>
-                <p class="muted" id="pAbout">Beschreibung...</p>
+                <h1 id="pName">Firmenname</h1>
+                <p id="pAbout" class="profile-description">Beschreibung der Firma</p>
 
                 <div class="profile-meta">
-                    <span id="pDistrict">Stadtteil</span> ·
-                    <span id="pType">Typ</span> ·
-                    <span id="pTeam">Team</span> ·
-                    <span id="pPrice">Preis</span> ·
-                    <span>⭐ <span id="pRating">0.0</span></span>
+                    <p><strong>Bezirk:</strong> <span id="pDistrict"></span></p>
+                    <p><strong>Typ:</strong> <span id="pType"></span></p>
+                    <p><strong>Teamgröße:</strong> <span id="pTeam"></span></p>
+                    <p><strong>Preis:</strong> <span id="pPrice"></span></p>
+                    <p><strong>Bewertung:</strong> ⭐ <span id="pRating"></span></p>
+                    <p><strong>Erfahrung:</strong> <span id="pExperience"></span></p>
+                    <p><strong>Verfügbarkeit:</strong> <span id="pAvailability"></span></p>
+                    <p><strong>Kontakt:</strong> <span id="pPhone"></span></p>
+                    <p><strong>Sprachen:</strong> <span id="pLang"></span></p>
                 </div>
 
-                <div class="profile-extra">
-                    <p><strong>Erfahrung:</strong> <span id="pExperience">—</span></p>
-                    <p><strong>Verfügbarkeit:</strong> <span id="pAvailability">—</span></p>
-                    <p><strong>Kontakt:</strong> <span id="pPhone">—</span></p>
+                <div class="profile-services">
+                    <h3>Services</h3>
+                    <ul id="pServices"></ul>
                 </div>
 
-                <h3>Services</h3>
-                <ul class="services" id="pServices"></ul>
-
-                <p class="muted"><strong>Sprachen:</strong> <span id="pLang">—</span></p>
-
-                <a class="btn btn-primary" id="pCall" href="#">Anrufen</a>
+                <div class="profile-actions">
+                    <a id="pCall" class="btn btn-primary" href="#">Anrufen</a>
+                </div>
             </div>
 
             <div class="profile-right">
-                <img id="pImage" class="profile-avatar" src="" alt="Team" />
+                <img id="pImage" class="profile-avatar" src="" alt="Company image"/>
             </div>
         </section>
 
-        <!-- BOOKING -->
-        <section class="glass booking-card">
+        <!-- Booking Card -->
+        <section class="booking-box glass">
             <h2>Jetzt buchen</h2>
 
-            <form id="bookingForm">
-                <div class="form-row">
-                    <label>Datum</label>
+            <form id="bookingForm" class="booking-form-grid">
+                <div>
+                    <label for="bDate">Datum</label>
                     <input id="bDate" type="date" required />
                 </div>
 
-                <div class="form-row">
-                    <label>Uhrzeit</label>
+                <div>
+                    <label for="bTime">Uhrzeit</label>
                     <input id="bTime" type="time" required />
                 </div>
 
-                <div class="form-row">
-                    <label>Adresse</label>
+                <div class="full-width">
+                    <label for="bAddress">Adresse</label>
                     <input id="bAddress" type="text" placeholder="Straße, Nr, PLZ" required />
                 </div>
 
-                <div class="form-row">
-                    <label>Notiz</label>
-                    <textarea id="bNote" rows="3" placeholder="z.B. Größe der Wohnung, Wünsche..."></textarea>
+                <div class="full-width">
+                    <label for="bNote">Notiz</label>
+                    <textarea id="bNote" rows="4" placeholder="z.B. Größe der Wohnung, Wünsche..."></textarea>
                 </div>
 
-                <button class="btn btn-primary" type="submit">Anfrage senden</button>
-                <p class="muted tiny" id="bookingMsg"></p>
+                <div class="full-width booking-actions">
+                    <button type="submit" class="btn btn-primary">Anfrage senden</button>
+                    <p id="bookingMsg"></p>
+                </div>
             </form>
         </section>
-    </main>
+
+    </div>
 
     <script src="script.js"></script>
 </body>
