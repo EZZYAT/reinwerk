@@ -4,15 +4,28 @@ const express = require("express");
 const cors = require("cors");
 const fs = require("fs");
 const session = require("express-session");
+const { v2: cloudinary } = require("cloudinary");
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
 
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, "images/uploads");
-    },
-    filename: (req, file, cb) => {
-        const uniqueName = Date.now() + path.extname(file.originalname);
-        cb(null, uniqueName);
-    }
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+
+const storage = new CloudinaryStorage({
+    cloudinary,
+    params: async (req, file) => ({
+        folder: "reinwerk",
+        transformation: [
+            { width: 1200, crop: "limit" },
+            { quality: "auto" },
+            { fetch_format: "auto" }
+        ],
+        allowed_formats: ["jpg", "jpeg", "png", "webp"],
+        public_id: `${Date.now()}-${file.originalname.split(".")[0]}`,
+    }),
 });
 
 const upload = multer({ storage });
@@ -40,7 +53,7 @@ app.post("/api/upload", upload.single("image"), (req, res) => {
     }
 
     res.json({
-        image: "/images/uploads/" + req.file.filename
+        image: req.file.path
     });
 });
 
