@@ -211,6 +211,26 @@
                 fixedImage = "/" + fixedImage;
             }
 
+            let imageValue = document.getElementById("image").value.trim();
+
+            const fileInput = document.getElementById("imageFile");
+            if (fileInput && fileInput.files.length > 0) {
+                const formData = new FormData();
+                formData.append("image", fileInput.files[0]);
+
+                const uploadRes = await fetch("/api/upload", {
+                    method: "POST",
+                    body: formData
+                });
+
+                const uploadData = await uploadRes.json();
+
+                if (uploadData.image) {
+                    imageValue = uploadData.image;
+                    document.getElementById("image").value = imageValue;
+                }
+            }
+
             const payload = {
                 name: document.getElementById("name").value.trim(),
                 district: document.getElementById("district").value.trim(),
@@ -227,7 +247,7 @@
                     .map(v => v.trim())
                     .filter(Boolean),
                 description: document.getElementById("description").value.trim(),
-                image: fixedImage
+                image: imageValue
             };
 
             const msg = document.getElementById("msg");
