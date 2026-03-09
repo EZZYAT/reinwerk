@@ -72,29 +72,9 @@ app.get("/", (req, res) => {
 });
 
 // ===== FILES =====
-const bookingsFile = path.join(__dirname, "data", "bookings.json");
 const companiesFile = path.join(__dirname, "data", "companies.json");
 
 // ===== READ / WRITE BOOKINGS =====
-function readBookings() {
-    try {
-        if (!fs.existsSync(bookingsFile)) return [];
-        const raw = fs.readFileSync(bookingsFile, "utf-8");
-        if (!raw.trim()) return [];
-        return JSON.parse(raw);
-    } catch (e) {
-        console.error("Error reading bookings:", e);
-        return [];
-    }
-}
-
-function saveBookings(bookings) {
-    try {
-        fs.writeFileSync(bookingsFile, JSON.stringify(bookings, null, 2), "utf-8");
-    } catch (e) {
-        console.error("Error saving bookings:", e);
-    }
-}
 
 // ===== READ / WRITE COMPANIES =====
 function readCompanies() {
@@ -436,57 +416,89 @@ app.get("/api/companies/:id", (req, res) => {
 });
 
 // ===== BOOKINGS API =====
-app.post("/api/bookings", (req, res) => {
-    const { companyId, date, time, address, note } = req.body;
-    const cid = Number(companyId);
+app.post("/api/bookings", async (req, res) => {
+    try {
 
-    const companies = readCompanies();
+        const {
+            companyId,
+            customerName,
+            customerPhone,
+            customerEmail,
+            service,
+            bookingDate,
+            bookingTime,
+            message
+        } = req.body;
 
-    if (!cid || !companies.find(c => Number(c.id) === cid)) {
-        return res.status(400).json({ message: "Invalid companyId" });
+        if (!companyId || !customerName || !bookingDate || !bookingTime) {
+            return res.status(400).json({ message: "Missing required fields" });
+        }
+
+        const { data, error } = await supabase
+            .from("bookings")
+            .insert([
+                {
+                    company_id: Number(companyId),
+                    customer_name: customerName,
+                    customer_phone: customerPhone || "",
+                    customer_email: customerEmail || "",
+                    service: service || "",
+                    booking_date: bookingDate,
+                    booking_time: bookingTime,
+                    message: message || ""
+                }
+            ])
+            .select()
+            .single();
+
+        if (error) {
+            console.error(error);
+            return res.status(500).json({ message: "Failed to create booking" });
+        }
+
+        res.json({
+            message: "Booking created",
+            booking: data
+        });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Server error" });
     }
-
-    if (!date || !time || !address) {
-        return res.status(400).json({ message: "date, time, address are required" });
-    }
-
-    const bookings = readBookings();
-
-    const booking = {
-        id: Date.now(),
-        companyId: cid,
-        date,
-        time,
-        address,
-        note: note || "",
-        status: "Pending",
-        createdAt: new Date().toISOString()
-    };
-
-    bookings.push(booking);
-    saveBookings(bookings);
-
-    res.status(201).json({ message: "Booking saved", booking });
 });
 
 app.get("/api/bookings", (req, res) => {
     res.json(readBookings());
 });
 
-app.get("/api/company/bookings", (req, res) => {
-    const currentCompanyId = req.session.companyId;
+app.get("/api/company/bookings", async (req, res) => {
 
-    if (!currentCompanyId) {
-        return res.status(401).json({ message: "Not logged in" });
+    try {
+
+        const companyId = req.session.companyId;
+
+        if (!companyId) {
+            return res.status(401).json({ message: "Not logged in" });
+        }
+
+        const { data, error } = await supabase
+            .from("bookings")
+            .select("*")
+            .eq("company_id", companyId)
+            .order("created_at", { ascending: false });
+
+        if (error) {
+            console.error(error);
+            return res.status(500).json({ message: "Failed to load bookings" });
+        }
+
+        res.json(data);
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Server error" });
     }
 
-    const bookings = readBookings();
-
-    const myBookings = bookings.filter(
-        b => Number(b.companyId) === Number(currentCompanyId)
-    );
-
-    res.json(myBookings);
 });
 
 app.get("/api/bookings/:id", (req, res) => {
