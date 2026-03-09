@@ -1,3 +1,13 @@
+
+
+
+const { createClient } = require('@supabase/supabase-js');
+
+const supabase = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_KEY
+);
+
 const multer = require("multer");
 const path = require("path");
 const express = require("express");
@@ -108,110 +118,175 @@ function saveCompanies(companies) {
 }
 
 // ===== AUTH =====
-app.post("/api/login-company", (req, res) => {
-    const email = (req.body.email || "").trim().toLowerCase();
-    const password = (req.body.password || "").trim();
+app.post("/api/login-company", async (req, res) => {
+    try {
+        const email = (req.body.email || "").trim().toLowerCase();
+        const password = (req.body.password || "").trim();
 
-    const companies = readCompanies();
-    const company = companies.find(c => (c.email || "").trim().toLowerCase() === email);
+        if (!email || !password) {
+            return res.status(400).json({ message: "Email and password are required" });
+        }
 
-    if (!company) {
-        return res.status(400).json({ message: "Email not found" });
+        const { data: company, error } = await supabase
+            .from("companies")
+            .select("*")
+            .eq("email", email)
+            .maybeSingle();
+
+        if (error) {
+            console.error(error);
+            return res.status(500).json({ message: "Database error" });
+        }
+
+        if (!company) {
+            return res.status(400).json({ message: "Email not found" });
+        }
+
+        if (company.password !== password) {
+            return res.status(401).json({ message: "Wrong password" });
+        }
+
+        req.session.companyId = company.id;
+
+        res.json({
+            message: "Logged in",
+            companyId: company.id,
+            companyName: company.name
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Server error" });
     }
-
-    if (company.password !== password) {
-        return res.status(401).json({ message: "Wrong password" });
-    }
-
-    req.session.companyId = company.id;
-
-    res.json({
-        message: "Logged in",
-        companyId: company.id,
-        companyName: company.name
-    });
 });
-
 app.post("/api/logout", (req, res) => {
     req.session.destroy(() => {
         res.json({ message: "Logged out" });
     });
 });
 
-app.get("/api/company/me", (req, res) => {
-    const currentCompanyId = req.session.companyId;
+app.get("/api/company/me", async (req, res) => {
+    try {
+        if (!req.session.companyId) {
+            return res.status(401).json({ message: "Not logged in" });
+        }
 
-    if (!currentCompanyId) {
-        return res.status(401).json({ message: "Not logged in" });
+        const { data: company, error } = await supabase
+            .from("companies")
+            .select("*")
+            .eq("id", req.session.companyId)
+            .maybeSingle();
+
+        if (error) {
+            console.error(error);
+            return res.status(500).json({ message: "Database error" });
+        }
+
+        if (!company) {
+            return res.status(404).json({ message: "Company not found" });
+        }
+
+        res.json({
+            id: company.id,
+            name: company.name,
+            email: company.email,
+            district: company.district,
+            phone: company.phone,
+            price: company.price,
+            rating: company.rating,
+            image: company.image,
+            type: company.type,
+            teamSize: company.team_size,
+            description: company.description,
+            services: company.services || [],
+            languages: company.languages || [],
+            experience: company.experience,
+            availability: company.availability
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Server error" });
     }
-
-    const companies = readCompanies();
-    const company = companies.find(c => Number(c.id) === Number(currentCompanyId));
-
-    if (!company) {
-        return res.status(404).json({ message: "Company not found" });
-    }
-
-    res.json(company);
 });
 
 // ===== REGISTER COMPANY =====
-app.post("/api/register-company", (req, res) => {
-    const name = (req.body.name || "").trim();
-    const email = (req.body.email || "").trim().toLowerCase();
-    const password = (req.body.password || "").trim();
-    const district = (req.body.district || "").trim();
-    const phone = (req.body.phone || "").trim();
-    const description = (req.body.description || "").trim();
+app.post("/api/register-company", async (req, res) => {
+    try {
+        const {
+            name,
+            email,
+            password,
+            district,
+            phone,
+            price,
+            rating,
+            image,
+            type,
+            teamSize,
+            description,
+            services,
+            languages,
+            experience,
+            availability
+        } = req.body;
 
-    const teamSize = Number(req.body.teamSize || 1);
-    const price = (req.body.price || "").trim() || "ab 0€";
+        if (!name || !email || !password) {
+            return res.status(400).json({ message: "Name, email and password are required" });
+        }
 
-    const languages = Array.isArray(req.body.languages) && req.body.languages.length
-        ? req.body.languages
-        : ["DE"];
+        const normalizedEmail = String(email).trim().toLowerCase();
 
-    const services = Array.isArray(req.body.services) && req.body.services.length
-        ? req.body.services
-        : ["Reinigung"];
+        const { data: existing, error: existingError } = await supabase
+            .from("companies")
+            .select("id")
+            .eq("email", normalizedEmail)
+            .maybeSingle();
 
-    const companies = readCompanies();
+        if (existingError) {
+            console.error(existingError);
+            return res.status(500).json({ message: "Database error" });
+        }
 
-    if (!name || !email || !password || !district || !phone) {
-        return res.status(400).json({ message: "Please fill all required fields" });
+        if (existing) {
+            return res.status(400).json({ message: "Email already exists" });
+        }
+
+        const { data, error } = await supabase
+            .from("companies")
+            .insert([
+                {
+                    name: name || "",
+                    email: normalizedEmail,
+                    password: String(password),
+                    district: district || "",
+                    phone: phone || "",
+                    price: price || "",
+                    rating: Number(rating || 0),
+                    image: image || "",
+                    type: type || "team",
+                    team_size: Number(teamSize || 1),
+                    description: description || "",
+                    services: Array.isArray(services) ? services : [],
+                    languages: Array.isArray(languages) ? languages : [],
+                    experience: experience || "",
+                    availability: availability || ""
+                }
+            ])
+            .select()
+            .single();
+
+        if (error) {
+            console.error(error);
+            return res.status(500).json({ message: "Failed to register company" });
+        }
+
+        res.json({
+            message: "Company registered successfully",
+            company: data
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Server error" });
     }
-
-    const exists = companies.find(c => (c.email || "").trim().toLowerCase() === email);
-    if (exists) {
-        return res.status(400).json({ message: "Email already exists" });
-    }
-
-    const newCompany = {
-        id: Date.now(),
-        name,
-        email,
-        password,
-        district,
-        price,
-        rating: 0,
-        phone,
-        image: "",
-        type: "team",
-        teamSize,
-        description: description || "Neue Firma bei ReinWerk",
-        services,
-        languages,
-        experience: "Neu",
-        availability: "Nach Vereinbarung"
-    };
-
-    companies.push(newCompany);
-    saveCompanies(companies);
-
-    res.status(201).json({
-        message: "Company registered successfully",
-        company: newCompany
-    });
 });
 
 // ===== RESET PASSWORD =====
@@ -236,56 +311,90 @@ app.post("/api/reset-password", (req, res) => {
 });
 
 // ===== COMPANY SELF UPDATE =====
-app.put("/api/company/profile", (req, res) => {
-    const currentCompanyId = req.session.companyId;
+app.put("/api/company/profile", async (req, res) => {
+    try {
+        if (!req.session.companyId) {
+            return res.status(401).json({ message: "Not logged in" });
+        }
 
-    if (!currentCompanyId) {
-        return res.status(401).json({ message: "Not logged in" });
+        const {
+            name,
+            district,
+            email,
+            phone,
+            price,
+            teamSize,
+            description,
+            services,
+            languages,
+            image
+        } = req.body;
+
+        const normalizedEmail = (email || "").trim().toLowerCase();
+
+        const { data: existingWithEmail, error: emailCheckError } = await supabase
+            .from("companies")
+            .select("id")
+            .eq("email", normalizedEmail)
+            .neq("id", req.session.companyId)
+            .maybeSingle();
+
+        if (emailCheckError) {
+            console.error(emailCheckError);
+            return res.status(500).json({ message: "Database error" });
+        }
+
+        if (existingWithEmail) {
+            return res.status(400).json({ message: "Email already used by another company" });
+        }
+
+        const { data, error } = await supabase
+            .from("companies")
+            .update({
+                name: name || "",
+                district: district || "",
+                email: normalizedEmail,
+                phone: phone || "",
+                price: price || "",
+                team_size: Number(teamSize || 1),
+                description: description || "",
+                services: Array.isArray(services) ? services : [],
+                languages: Array.isArray(languages) ? languages : [],
+                image: image || ""
+            })
+            .eq("id", req.session.companyId)
+            .select()
+            .single();
+
+        if (error) {
+            console.error(error);
+            return res.status(500).json({ message: "Update failed" });
+        }
+
+        res.json({
+            message: "Profile updated successfully",
+            company: {
+                id: data.id,
+                name: data.name,
+                email: data.email,
+                district: data.district,
+                phone: data.phone,
+                price: data.price,
+                rating: data.rating,
+                image: data.image,
+                type: data.type,
+                teamSize: data.team_size,
+                description: data.description,
+                services: data.services || [],
+                languages: data.languages || [],
+                experience: data.experience,
+                availability: data.availability
+            }
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Server error" });
     }
-
-    const companies = readCompanies();
-    const index = companies.findIndex(c => Number(c.id) === Number(currentCompanyId));
-
-    if (index === -1) {
-        return res.status(404).json({ message: "Company not found" });
-    }
-
-    const current = companies[index];
-    const nextEmail = (req.body.email || "").trim().toLowerCase();
-
-    const emailTaken = companies.find(c =>
-        Number(c.id) !== Number(currentCompanyId) &&
-        (c.email || "").trim().toLowerCase() === nextEmail
-    );
-
-    if (emailTaken) {
-        return res.status(400).json({ message: "Email already exists" });
-    }
-
-    companies[index] = {
-        ...current,
-        name: (req.body.name || current.name).trim(),
-        district: (req.body.district || current.district).trim(),
-        email: nextEmail || current.email,
-        phone: (req.body.phone || current.phone).trim(),
-        price: (req.body.price || current.price).trim(),
-        teamSize: Number(req.body.teamSize || current.teamSize || 1),
-        description: (req.body.description || current.description).trim(),
-        image: (req.body.image || current.image || "").trim(),
-        languages: Array.isArray(req.body.languages) && req.body.languages.length
-            ? req.body.languages
-            : current.languages,
-        services: Array.isArray(req.body.services) && req.body.services.length
-            ? req.body.services
-            : current.services
-    };
-
-    saveCompanies(companies);
-
-    res.json({
-        message: "Profile updated successfully",
-        company: companies[index]
-    });
 });
 
 // ===== DELETE OWN ACCOUNT =====
