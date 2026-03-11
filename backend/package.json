@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@supabase/supabase-js": "^2.99.1",
     "cloudinary": "^1.41.3",
     "cors": "^2.8.5",
     "express": "^4.21.2",
