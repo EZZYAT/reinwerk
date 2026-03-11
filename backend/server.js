@@ -1,28 +1,25 @@
+const path = require("path");
+const express = require("express");
+const cors = require("cors");
+const session = require("express-session");
+const multer = require("multer");
+const { v2: cloudinary } = require("cloudinary");
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const { createClient } = require("@supabase/supabase-js");
 
-
-
-const { createClient } = require('@supabase/supabase-js');
+const app = express();
+const PORT = process.env.PORT || 3000;
 
 const supabase = createClient(
     process.env.SUPABASE_URL,
     process.env.SUPABASE_KEY
 );
 
-const multer = require("multer");
-const path = require("path");
-const express = require("express");
-const cors = require("cors");
-const fs = require("fs");
-const session = require("express-session");
-const { v2: cloudinary } = require("cloudinary");
-const { CloudinaryStorage } = require("multer-storage-cloudinary");
-
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
     api_secret: process.env.CLOUDINARY_API_SECRET,
 });
-
 
 const storage = new CloudinaryStorage({
     cloudinary,
@@ -31,31 +28,84 @@ const storage = new CloudinaryStorage({
         transformation: [
             { width: 1200, crop: "limit" },
             { quality: "auto" },
-            { fetch_format: "auto" }
+            { fetch_format: "auto" },
         ],
         allowed_formats: ["jpg", "jpeg", "png", "webp"],
-        public_id: `${Date.now()}-${file.originalname.split(".")[0]}`,
+        public_id: `${Date.now()}-${file.originalname
+            .split(".")[0]
+            .replace(/\s+/g, "-")}`,
     }),
 });
 
 const upload = multer({ storage });
 
-const app = express();
-const PORT = 3000;
+app.set("trust proxy", 1);
 
-// ===== MIDDLEWARE =====
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+app.use(
+    session({
+        secret: "reinwerk_secret_123",
+        resave: false,
+        saveUninitialized: false,
+        cookie: {
+            secure: false,
+            httpOnly: true,
+            sameSite: "lax",
+        },
+    })
+);
+
 app.use("/images", express.static("images"));
-
-app.use(session({
-    secret: "reinwerk_secret_123",
-    resave: false,
-    saveUninitialized: false
-}));
-
-// ===== STATIC FILES =====
 app.use(express.static(path.join(__dirname, "..")));
+
+function normalizeCompany(company) {
+    if (!company) return null;
+
+    return {
+        id: company.id,
+        name: company.name || "",
+        email: company.email || "",
+        password: company.password || "",
+        district: company.district || "",
+        phone: company.phone || "",
+        price: company.price || "",
+        rating: company.rating || 0,
+        image: company.image || "",
+        type: company.type || "team",
+        teamSize: company.team_size || 1,
+        description: company.description || "",
+        services: Array.isArray(company.services) ? company.services : [],
+        languages: Array.isArray(company.languages) ? company.languages : [],
+        experience: company.experience || "",
+        availability: company.availability || "",
+        createdAt: company.created_at || null,
+    };
+}
+
+function normalizeBooking(booking) {
+    if (!booking) return null;
+
+    return {
+        id: booking.id,
+        companyId: booking.company_id,
+        customerName: booking.customer_name || "",
+        customerPhone: booking.customer_phone || "",
+        customerEmail: booking.customer_email || "",
+        service: booking.service || "",
+        date: booking.booking_date || "",
+        time: booking.booking_time || "",
+        message: booking.message || "",
+        status: booking.status || "pending",
+        createdAt: booking.created_at || null,
+    };
+}
+
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "..", "index.html"));
+});
 
 app.post("/api/upload", upload.single("image"), (req, res) => {
     if (!req.file) {
@@ -63,48 +113,19 @@ app.post("/api/upload", upload.single("image"), (req, res) => {
     }
 
     res.json({
-        image: req.file.path
+        image: req.file.path,
     });
 });
 
-app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "..", "index.html"));
-});
-
-// ===== FILES =====
-const companiesFile = path.join(__dirname, "data", "companies.json");
-
-// ===== READ / WRITE BOOKINGS =====
-
-// ===== READ / WRITE COMPANIES =====
-function readCompanies() {
-    try {
-        if (!fs.existsSync(companiesFile)) return [];
-        const raw = fs.readFileSync(companiesFile, "utf-8");
-        if (!raw.trim()) return [];
-        return JSON.parse(raw);
-    } catch (e) {
-        console.error("Error reading companies:", e);
-        return [];
-    }
-}
-
-function saveCompanies(companies) {
-    try {
-        fs.writeFileSync(companiesFile, JSON.stringify(companies, null, 2), "utf-8");
-    } catch (e) {
-        console.error("Error saving companies:", e);
-    }
-}
-
-// ===== AUTH =====
 app.post("/api/login-company", async (req, res) => {
     try {
         const email = (req.body.email || "").trim().toLowerCase();
         const password = (req.body.password || "").trim();
 
         if (!email || !password) {
-            return res.status(400).json({ message: "Email and password are required" });
+            return res
+                .status(400)
+                .json({ message: "Email and password are required" });
         }
 
         const { data: company, error } = await supabase
@@ -114,7 +135,7 @@ app.post("/api/login-company", async (req, res) => {
             .maybeSingle();
 
         if (error) {
-            console.error(error);
+            console.error("LOGIN ERROR:", error);
             return res.status(500).json({ message: "Database error" });
         }
 
@@ -122,7 +143,7 @@ app.post("/api/login-company", async (req, res) => {
             return res.status(400).json({ message: "Email not found" });
         }
 
-        if (company.password !== password) {
+        if ((company.password || "").trim() !== password) {
             return res.status(401).json({ message: "Wrong password" });
         }
 
@@ -131,13 +152,14 @@ app.post("/api/login-company", async (req, res) => {
         res.json({
             message: "Logged in",
             companyId: company.id,
-            companyName: company.name
+            companyName: company.name,
         });
     } catch (err) {
-        console.error(err);
+        console.error("LOGIN SERVER ERROR:", err);
         res.status(500).json({ message: "Server error" });
     }
 });
+
 app.post("/api/logout", (req, res) => {
     req.session.destroy(() => {
         res.json({ message: "Logged out" });
@@ -157,7 +179,7 @@ app.get("/api/company/me", async (req, res) => {
             .maybeSingle();
 
         if (error) {
-            console.error(error);
+            console.error("COMPANY ME ERROR:", error);
             return res.status(500).json({ message: "Database error" });
         }
 
@@ -165,30 +187,13 @@ app.get("/api/company/me", async (req, res) => {
             return res.status(404).json({ message: "Company not found" });
         }
 
-        res.json({
-            id: company.id,
-            name: company.name,
-            email: company.email,
-            district: company.district,
-            phone: company.phone,
-            price: company.price,
-            rating: company.rating,
-            image: company.image,
-            type: company.type,
-            teamSize: company.team_size,
-            description: company.description,
-            services: company.services || [],
-            languages: company.languages || [],
-            experience: company.experience,
-            availability: company.availability
-        });
+        res.json(normalizeCompany(company));
     } catch (err) {
-        console.error(err);
+        console.error("COMPANY ME SERVER ERROR:", err);
         res.status(500).json({ message: "Server error" });
     }
 });
 
-// ===== REGISTER COMPANY =====
 app.post("/api/register-company", async (req, res) => {
     try {
         const {
@@ -206,11 +211,13 @@ app.post("/api/register-company", async (req, res) => {
             services,
             languages,
             experience,
-            availability
+            availability,
         } = req.body;
 
         if (!name || !email || !password) {
-            return res.status(400).json({ message: "Name, email and password are required" });
+            return res
+                .status(400)
+                .json({ message: "Name, email and password are required" });
         }
 
         const normalizedEmail = String(email).trim().toLowerCase();
@@ -222,75 +229,115 @@ app.post("/api/register-company", async (req, res) => {
             .maybeSingle();
 
         if (existingError) {
-            console.error(existingError);
-            return res.status(500).json({ message: "Database error" });
+            console.error("REGISTER CHECK ERROR:", existingError);
+            return res.status(500).json({
+                message: "Database error",
+                supabaseError: existingError.message,
+                details: existingError.details,
+                hint: existingError.hint,
+            });
         }
 
         if (existing) {
             return res.status(400).json({ message: "Email already exists" });
         }
 
+        const servicesArray = Array.isArray(services)
+            ? services
+            : String(services || "")
+                .split(",")
+                .map((s) => s.trim())
+                .filter(Boolean);
+
+        const languagesArray = Array.isArray(languages)
+            ? languages
+            : String(languages || "")
+                .split(",")
+                .map((l) => l.trim())
+                .filter(Boolean);
+
+        const insertPayload = {
+            name: String(name || "").trim(),
+            email: normalizedEmail,
+            password: String(password || "").trim(),
+            district: String(district || "").trim(),
+            phone: String(phone || "").trim(),
+            price: String(price || "").trim(),
+            rating: Number(rating || 0),
+            image: String(image || "").trim(),
+            type: String(type || "team").trim(),
+            team_size: Number(teamSize || 1),
+            description: String(description || "").trim(),
+            services: servicesArray,
+            languages: languagesArray,
+            experience: String(experience || "").trim(),
+            availability: String(availability || "").trim(),
+        };
+
         const { data, error } = await supabase
             .from("companies")
-            .insert([
-                {
-                    name: name || "",
-                    email: normalizedEmail,
-                    password: String(password),
-                    district: district || "",
-                    phone: phone || "",
-                    price: price || "",
-                    rating: Number(rating || 0),
-                    image: image || "",
-                    type: type || "team",
-                    team_size: Number(teamSize || 1),
-                    description: description || "",
-                    services: Array.isArray(services) ? services : [],
-                    languages: Array.isArray(languages) ? languages : [],
-                    experience: experience || "",
-                    availability: availability || ""
-                }
-            ])
+            .insert([insertPayload])
             .select()
             .single();
 
         if (error) {
-            console.error(error);
-            return res.status(500).json({ message: "Failed to register company" });
+            console.error("REGISTER INSERT ERROR:", error);
+            return res.status(500).json({
+                message: "Database error",
+                supabaseError: error.message,
+                details: error.details,
+                hint: error.hint,
+            });
         }
 
         res.json({
             message: "Company registered successfully",
-            company: data
+            company: normalizeCompany(data),
         });
     } catch (err) {
-        console.error(err);
+        console.error("REGISTER SERVER ERROR:", err);
         res.status(500).json({ message: "Server error" });
     }
 });
 
-// ===== RESET PASSWORD =====
-app.post("/api/reset-password", (req, res) => {
-    const { email, newPassword } = req.body;
+app.post("/api/reset-password", async (req, res) => {
+    try {
+        const email = (req.body.email || "").trim().toLowerCase();
+        const newPassword = (req.body.newPassword || "").trim();
 
-    const companies = readCompanies();
-    const company = companies.find(c => (c.email || "").trim().toLowerCase() === (email || "").trim().toLowerCase());
+        if (!email) {
+            return res.status(400).json({ message: "Email is required" });
+        }
 
-    if (!company) {
-        return res.status(404).json({ message: "Email not found" });
+        if (!newPassword || newPassword.length < 4) {
+            return res
+                .status(400)
+                .json({ message: "Password must be at least 4 characters" });
+        }
+
+        const { data, error } = await supabase
+            .from("companies")
+            .update({ password: newPassword })
+            .eq("email", email)
+            .select("id")
+            .maybeSingle();
+
+        if (error) {
+            console.error("RESET PASSWORD ERROR:", error);
+            return res.status(500).json({ message: "Database error" });
+        }
+
+        if (!data) {
+            return res.status(404).json({ message: "Email not found" });
+        }
+
+        res.json({ message: "Password updated successfully" });
+    } catch (err) {
+        console.error("RESET PASSWORD SERVER ERROR:", err);
+        res.status(500).json({ message: "Server error" });
     }
-
-    if (!newPassword || newPassword.length < 4) {
-        return res.status(400).json({ message: "Password must be at least 4 characters" });
-    }
-
-    company.password = newPassword;
-    saveCompanies(companies);
-
-    res.json({ message: "Password updated successfully" });
 });
 
-// ===== COMPANY SELF UPDATE =====
 app.put("/api/company/profile", async (req, res) => {
     try {
         if (!req.session.companyId) {
@@ -307,7 +354,9 @@ app.put("/api/company/profile", async (req, res) => {
             description,
             services,
             languages,
-            image
+            image,
+            experience,
+            availability,
         } = req.body;
 
         const normalizedEmail = (email || "").trim().toLowerCase();
@@ -320,105 +369,149 @@ app.put("/api/company/profile", async (req, res) => {
             .maybeSingle();
 
         if (emailCheckError) {
-            console.error(emailCheckError);
+            console.error("PROFILE EMAIL CHECK ERROR:", emailCheckError);
             return res.status(500).json({ message: "Database error" });
         }
 
         if (existingWithEmail) {
-            return res.status(400).json({ message: "Email already used by another company" });
+            return res
+                .status(400)
+                .json({ message: "Email already used by another company" });
         }
+
+        const servicesArray = Array.isArray(services)
+            ? services
+            : String(services || "")
+                .split(",")
+                .map((s) => s.trim())
+                .filter(Boolean);
+
+        const languagesArray = Array.isArray(languages)
+            ? languages
+            : String(languages || "")
+                .split(",")
+                .map((l) => l.trim())
+                .filter(Boolean);
 
         const { data, error } = await supabase
             .from("companies")
             .update({
-                name: name || "",
-                district: district || "",
+                name: String(name || "").trim(),
+                district: String(district || "").trim(),
                 email: normalizedEmail,
-                phone: phone || "",
-                price: price || "",
+                phone: String(phone || "").trim(),
+                price: String(price || "").trim(),
                 team_size: Number(teamSize || 1),
-                description: description || "",
-                services: Array.isArray(services) ? services : [],
-                languages: Array.isArray(languages) ? languages : [],
-                image: image || ""
+                description: String(description || "").trim(),
+                services: servicesArray,
+                languages: languagesArray,
+                image: String(image || "").trim(),
+                experience: String(experience || "").trim(),
+                availability: String(availability || "").trim(),
             })
             .eq("id", req.session.companyId)
             .select()
             .single();
 
         if (error) {
-            console.error(error);
+            console.error("PROFILE UPDATE ERROR:", error);
             return res.status(500).json({ message: "Update failed" });
         }
 
         res.json({
             message: "Profile updated successfully",
-            company: {
-                id: data.id,
-                name: data.name,
-                email: data.email,
-                district: data.district,
-                phone: data.phone,
-                price: data.price,
-                rating: data.rating,
-                image: data.image,
-                type: data.type,
-                teamSize: data.team_size,
-                description: data.description,
-                services: data.services || [],
-                languages: data.languages || [],
-                experience: data.experience,
-                availability: data.availability
-            }
+            company: normalizeCompany(data),
         });
     } catch (err) {
-        console.error(err);
+        console.error("PROFILE UPDATE SERVER ERROR:", err);
         res.status(500).json({ message: "Server error" });
     }
 });
 
-// ===== DELETE OWN ACCOUNT =====
-app.delete("/api/company/account", (req, res) => {
-    const currentCompanyId = req.session.companyId;
+app.delete("/api/company/account", async (req, res) => {
+    try {
+        const currentCompanyId = req.session.companyId;
 
-    if (!currentCompanyId) {
-        return res.status(401).json({ message: "Not logged in" });
+        if (!currentCompanyId) {
+            return res.status(401).json({ message: "Not logged in" });
+        }
+
+        const { error: bookingsError } = await supabase
+            .from("bookings")
+            .delete()
+            .eq("company_id", currentCompanyId);
+
+        if (bookingsError) {
+            console.error("DELETE ACCOUNT BOOKINGS ERROR:", bookingsError);
+            return res.status(500).json({ message: "Failed to delete bookings" });
+        }
+
+        const { error: companyError } = await supabase
+            .from("companies")
+            .delete()
+            .eq("id", currentCompanyId);
+
+        if (companyError) {
+            console.error("DELETE ACCOUNT COMPANY ERROR:", companyError);
+            return res.status(500).json({ message: "Failed to delete company" });
+        }
+
+        req.session.destroy(() => {
+            res.json({ message: "Account deleted" });
+        });
+    } catch (err) {
+        console.error("DELETE ACCOUNT SERVER ERROR:", err);
+        res.status(500).json({ message: "Server error" });
     }
-
-    const companies = readCompanies();
-    const newCompanies = companies.filter(c => Number(c.id) !== Number(currentCompanyId));
-    saveCompanies(newCompanies);
-
-    const bookings = readBookings();
-    const newBookings = bookings.filter(b => Number(b.companyId) !== Number(currentCompanyId));
-    saveBookings(newBookings);
-
-    req.session.destroy(() => {
-        res.json({ message: "Account deleted" });
-    });
 });
 
-// ===== COMPANIES API =====
-app.get("/api/companies", (req, res) => {
-    res.json(readCompanies());
-});
+app.get("/api/companies", async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from("companies")
+            .select("*")
+            .order("id", { ascending: true });
 
-app.get("/api/companies/:id", (req, res) => {
-    const id = Number(req.params.id);
-    const companies = readCompanies();
-    const company = companies.find(c => Number(c.id) === id);
+        if (error) {
+            console.error("GET COMPANIES ERROR:", error);
+            return res.status(500).json({ message: "Database error" });
+        }
 
-    if (!company) {
-        return res.status(404).json({ message: "Company not found" });
+        res.json((data || []).map(normalizeCompany));
+    } catch (err) {
+        console.error("GET COMPANIES SERVER ERROR:", err);
+        res.status(500).json({ message: "Server error" });
     }
-
-    res.json(company);
 });
 
-// ===== BOOKINGS API =====
+app.get("/api/companies/:id", async (req, res) => {
+    try {
+        const id = Number(req.params.id);
+
+        const { data, error } = await supabase
+            .from("companies")
+            .select("*")
+            .eq("id", id)
+            .maybeSingle();
+
+        if (error) {
+            console.error("GET COMPANY ERROR:", error);
+            return res.status(500).json({ message: "Database error" });
+        }
+
+        if (!data) {
+            return res.status(404).json({ message: "Company not found" });
+        }
+
+        res.json(normalizeCompany(data));
+    } catch (err) {
+        console.error("GET COMPANY SERVER ERROR:", err);
+        res.status(500).json({ message: "Server error" });
+    }
+});
+
 app.post("/api/bookings", async (req, res) => {
     try {
-
         const {
             companyId,
             customerName,
@@ -427,7 +520,7 @@ app.post("/api/bookings", async (req, res) => {
             service,
             bookingDate,
             bookingTime,
-            message
+            message,
         } = req.body;
 
         if (!companyId || !customerName || !bookingDate || !bookingTime) {
@@ -439,42 +532,54 @@ app.post("/api/bookings", async (req, res) => {
             .insert([
                 {
                     company_id: Number(companyId),
-                    customer_name: customerName,
-                    customer_phone: customerPhone || "",
-                    customer_email: customerEmail || "",
-                    service: service || "",
-                    booking_date: bookingDate,
-                    booking_time: bookingTime,
-                    message: message || ""
-                }
+                    customer_name: String(customerName || "").trim(),
+                    customer_phone: String(customerPhone || "").trim(),
+                    customer_email: String(customerEmail || "").trim(),
+                    service: String(service || "").trim(),
+                    booking_date: String(bookingDate || "").trim(),
+                    booking_time: String(bookingTime || "").trim(),
+                    message: String(message || "").trim(),
+                },
             ])
             .select()
             .single();
 
         if (error) {
-            console.error(error);
+            console.error("CREATE BOOKING ERROR:", error);
             return res.status(500).json({ message: "Failed to create booking" });
         }
 
         res.json({
             message: "Booking created",
-            booking: data
+            booking: normalizeBooking(data),
         });
-
     } catch (err) {
-        console.error(err);
+        console.error("CREATE BOOKING SERVER ERROR:", err);
         res.status(500).json({ message: "Server error" });
     }
 });
 
-app.get("/api/bookings", (req, res) => {
-    res.json(readBookings());
+app.get("/api/bookings", async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from("bookings")
+            .select("*")
+            .order("created_at", { ascending: false });
+
+        if (error) {
+            console.error("GET BOOKINGS ERROR:", error);
+            return res.status(500).json({ message: "Database error" });
+        }
+
+        res.json((data || []).map(normalizeBooking));
+    } catch (err) {
+        console.error("GET BOOKINGS SERVER ERROR:", err);
+        res.status(500).json({ message: "Server error" });
+    }
 });
 
 app.get("/api/company/bookings", async (req, res) => {
-
     try {
-
         const companyId = req.session.companyId;
 
         if (!companyId) {
@@ -488,94 +593,143 @@ app.get("/api/company/bookings", async (req, res) => {
             .order("created_at", { ascending: false });
 
         if (error) {
-            console.error(error);
+            console.error("GET COMPANY BOOKINGS ERROR:", error);
             return res.status(500).json({ message: "Failed to load bookings" });
         }
 
-        res.json(data);
-
+        res.json((data || []).map(normalizeBooking));
     } catch (err) {
-        console.error(err);
+        console.error("GET COMPANY BOOKINGS SERVER ERROR:", err);
         res.status(500).json({ message: "Server error" });
     }
-
 });
 
-app.get("/api/bookings/:id", (req, res) => {
-    const id = Number(req.params.id);
-    const bookings = readBookings();
-    const booking = bookings.find(b => Number(b.id) === id);
+app.get("/api/bookings/:id", async (req, res) => {
+    try {
+        const id = Number(req.params.id);
 
-    if (!booking) {
-        return res.status(404).json({ message: "Booking not found" });
+        const { data, error } = await supabase
+            .from("bookings")
+            .select("*")
+            .eq("id", id)
+            .maybeSingle();
+
+        if (error) {
+            console.error("GET BOOKING ERROR:", error);
+            return res.status(500).json({ message: "Database error" });
+        }
+
+        if (!data) {
+            return res.status(404).json({ message: "Booking not found" });
+        }
+
+        res.json(normalizeBooking(data));
+    } catch (err) {
+        console.error("GET BOOKING SERVER ERROR:", err);
+        res.status(500).json({ message: "Server error" });
     }
-
-    res.json(booking);
 });
 
-app.put("/api/bookings/:id", (req, res) => {
-    const id = Number(req.params.id);
-    const { date, time, address, note } = req.body;
+app.put("/api/bookings/:id", async (req, res) => {
+    try {
+        const id = Number(req.params.id);
+        const { date, time, message, status } = req.body;
 
-    const bookings = readBookings();
-    const index = bookings.findIndex(b => Number(b.id) === id);
+        const { data, error } = await supabase
+            .from("bookings")
+            .update({
+                booking_date: String(date || "").trim(),
+                booking_time: String(time || "").trim(),
+                message: String(message || "").trim(),
+                status: String(status || "pending").trim(),
+            })
+            .eq("id", id)
+            .select()
+            .maybeSingle();
 
-    if (index === -1) {
-        return res.status(404).json({ message: "Booking not found" });
+        if (error) {
+            console.error("UPDATE BOOKING ERROR:", error);
+            return res.status(500).json({ message: "Update failed" });
+        }
+
+        if (!data) {
+            return res.status(404).json({ message: "Booking not found" });
+        }
+
+        res.json({
+            message: "Booking updated",
+            booking: normalizeBooking(data),
+        });
+    } catch (err) {
+        console.error("UPDATE BOOKING SERVER ERROR:", err);
+        res.status(500).json({ message: "Server error" });
     }
-
-    if (!date || !time || !address) {
-        return res.status(400).json({ message: "date, time, address are required" });
-    }
-
-    bookings[index] = {
-        ...bookings[index],
-        date,
-        time,
-        address,
-        note: note || "",
-        updatedAt: new Date().toISOString()
-    };
-
-    saveBookings(bookings);
-    res.json({ message: "Booking updated", booking: bookings[index] });
 });
 
-app.delete("/api/bookings/:id", (req, res) => {
-    const id = Number(req.params.id);
+app.delete("/api/bookings/:id", async (req, res) => {
+    try {
+        const id = Number(req.params.id);
 
-    const bookings = readBookings();
-    const newBookings = bookings.filter(b => Number(b.id) !== id);
+        const { data, error } = await supabase
+            .from("bookings")
+            .delete()
+            .eq("id", id)
+            .select()
+            .maybeSingle();
 
-    if (newBookings.length === bookings.length) {
-        return res.status(404).json({ message: "Booking not found" });
+        if (error) {
+            console.error("DELETE BOOKING ERROR:", error);
+            return res.status(500).json({ message: "Delete failed" });
+        }
+
+        if (!data) {
+            return res.status(404).json({ message: "Booking not found" });
+        }
+
+        res.json({ message: "Booking deleted", id });
+    } catch (err) {
+        console.error("DELETE BOOKING SERVER ERROR:", err);
+        res.status(500).json({ message: "Server error" });
     }
-
-    saveBookings(newBookings);
-    res.json({ message: "Booking deleted", id });
 });
 
-// ===== ADMIN DELETE COMPANY =====
-app.delete("/api/admin/companies/:id", (req, res) => {
-    const id = Number(req.params.id);
+app.delete("/api/admin/companies/:id", async (req, res) => {
+    try {
+        const id = Number(req.params.id);
 
-    const companies = readCompanies();
-    const newCompanies = companies.filter(c => Number(c.id) !== id);
+        const { error: bookingsError } = await supabase
+            .from("bookings")
+            .delete()
+            .eq("company_id", id);
 
-    if (newCompanies.length === companies.length) {
-        return res.status(404).json({ message: "Company not found" });
+        if (bookingsError) {
+            console.error("ADMIN DELETE BOOKINGS ERROR:", bookingsError);
+            return res.status(500).json({ message: "Failed to delete company bookings" });
+        }
+
+        const { data, error } = await supabase
+            .from("companies")
+            .delete()
+            .eq("id", id)
+            .select()
+            .maybeSingle();
+
+        if (error) {
+            console.error("ADMIN DELETE COMPANY ERROR:", error);
+            return res.status(500).json({ message: "Delete failed" });
+        }
+
+        if (!data) {
+            return res.status(404).json({ message: "Company not found" });
+        }
+
+        res.json({ message: "Company deleted", id });
+    } catch (err) {
+        console.error("ADMIN DELETE COMPANY SERVER ERROR:", err);
+        res.status(500).json({ message: "Server error" });
     }
-
-    saveCompanies(newCompanies);
-
-    const bookings = readBookings();
-    const newBookings = bookings.filter(b => Number(b.companyId) !== id);
-    saveBookings(newBookings);
-
-    res.json({ message: "Company deleted", id });
 });
 
-// ===== START =====
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
