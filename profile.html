@@ -49,7 +49,7 @@
             </div>
 
             <div class="profile-right">
-                <img id="pImage" class="profile-avatar" src="" alt="Company image"/>
+                <img id="pImage" class="profile-avatar" src="" alt="Company image" />
             </div>
         </section>
 
@@ -58,6 +58,26 @@
             <h2>Jetzt buchen</h2>
 
             <form id="bookingForm" class="booking-form-grid">
+                <div>
+                    <label for="bName">Name</label>
+                    <input id="bName" type="text" placeholder="Ihr Name" required />
+                </div>
+
+                <div>
+                    <label for="bPhone">Telefon</label>
+                    <input id="bPhone" type="text" placeholder="+49 ..." />
+                </div>
+
+                <div>
+                    <label for="bEmail">E-Mail</label>
+                    <input id="bEmail" type="email" placeholder="name@email.com" />
+                </div>
+
+                <div>
+                    <label for="bService">Service</label>
+                    <input id="bService" type="text" placeholder="z.B. Wohnung, Büro" />
+                </div>
+
                 <div>
                     <label for="bDate">Datum</label>
                     <input id="bDate" type="date" required />
@@ -70,7 +90,7 @@
 
                 <div class="full-width">
                     <label for="bAddress">Adresse</label>
-                    <input id="bAddress" type="text" placeholder="Straße, Nr, PLZ" required />
+                    <input id="bAddress" type="text" placeholder="Straße, Nr, PLZ" />
                 </div>
 
                 <div class="full-width">

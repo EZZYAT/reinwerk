@@ -27,43 +27,27 @@ function $(id) {
 
 // ===== COUNTDOWN =====
 (function initCountdown() {
-    const d = $("days");
-    const h = $("hours");
-    const m = $("minutes");
-    const s = $("seconds");
+    const daysEl = document.getElementById("days");
+    if (!daysEl) return;
 
-    if (!d || !h || !m || !s) return;
+    // ضع هنا تاريخ نهاية العد التنازلي
+    const endDate = new Date("2026-05-08T23:59:59").getTime();
 
-    const target = new Date();
-    target.setDate(target.getDate() + 92);
-
-    const pad = (n) => String(n).padStart(2, "0");
-
-    function tick() {
-        const diff = target - new Date();
+    function updateCountdown() {
+        const now = Date.now();
+        const diff = endDate - now;
 
         if (diff <= 0) {
-            d.textContent = "00";
-            h.textContent = "00";
-            m.textContent = "00";
-            s.textContent = "00";
+            daysEl.textContent = "0";
             return;
         }
 
-        const total = Math.floor(diff / 1000);
-        const days = Math.floor(total / (3600 * 24));
-        const hours = Math.floor((total % (3600 * 24)) / 3600);
-        const mins = Math.floor((total % 3600) / 60);
-        const secs = total % 60;
-
-        d.textContent = pad(days);
-        h.textContent = pad(hours);
-        m.textContent = pad(mins);
-        s.textContent = pad(secs);
+        const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+        daysEl.textContent = String(days);
     }
 
-    tick();
-    setInterval(tick, 1000);
+    updateCountdown();
+    setInterval(updateCountdown, 1000 * 60);
 })();
 
 // ===== INDEX: RENDER COMPANIES =====
@@ -192,10 +176,16 @@ async function initProfile() {
 
                 const payload = {
                     companyId: Number(company.id),
-                    date: $("bDate")?.value,
-                    time: $("bTime")?.value,
-                    address: $("bAddress")?.value,
-                    note: $("bNote")?.value
+                    customerName: $("bName")?.value?.trim() || "",
+                    customerPhone: $("bPhone")?.value?.trim() || "",
+                    customerEmail: $("bEmail")?.value?.trim() || "",
+                    service: $("bService")?.value?.trim() || "",
+                    bookingDate: $("bDate")?.value || "",
+                    bookingTime: $("bTime")?.value || "",
+                    message: [
+                        $("bAddress")?.value?.trim() || "",
+                        $("bNote")?.value?.trim() || ""
+                    ].filter(Boolean).join(" | ")
                 };
 
                 try {
