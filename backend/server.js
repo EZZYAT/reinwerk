@@ -344,7 +344,6 @@ app.put("/api/company/profile", async (req, res) => {
         if (!req.session.companyId) {
             return res.status(401).json({ message: "Not logged in" });
         }
-
         const {
             name,
             district,

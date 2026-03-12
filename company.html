@@ -53,9 +53,9 @@
         }
 
         function getStatusClass(status) {
-            if (status === "Confirmed") return "status-confirmed";
-            if (status === "Done") return "status-done";
-            if (status === "Cancelled") return "status-cancelled";
+            if (status === "confirmed" || status === "Confirmed") return "status-confirmed";
+            if (status === "done" || status === "Done") return "status-done";
+            if (status === "cancelled" || status === "Cancelled") return "status-cancelled";
             return "status-pending";
         }
 
@@ -73,40 +73,40 @@
 
             if (!bookings.length) {
                 list.innerHTML = `
-          <div class="dashboard-card">
-            <p>No bookings yet.</p>
-          </div>
-        `;
+                    <div class="dashboard-card">
+                        <p>No bookings yet.</p>
+                    </div>
+                `;
                 return;
             }
 
-            bookings.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            bookings.forEach((b) => {
+                const card = document.createElement("div");
+                card.className = "dashboard-card";
 
-            bookings.forEach(b => {
-                const div = document.createElement("div");
-                div.className = "dashboard-card";
+                card.innerHTML = `
+                    <div class="dashboard-card-header">
+                        <h3>${b.service || "Cleaning Service"}</h3>
+                        <span class="status-badge ${getStatusClass(b.status)}">
+                            ${b.status || "pending"}
+                        </span>
+                    </div>
 
-                div.innerHTML = `
-          <div class="dashboard-card-header">
-            <h3>Booking #${b.id}</h3>
-            <span class="status-badge ${getStatusClass(b.status)}">${b.status || "Pending"}</span>
-          </div>
+                    <div class="dashboard-card-body">
+                        <p><strong>Date:</strong> ${b.date || "-"}</p>
+                        <p><strong>Time:</strong> ${b.time || "-"}</p>
+                        <p><strong>Name:</strong> ${b.customerName || "-"}</p>
+                        <p><strong>Phone:</strong> ${b.customerPhone || "-"}</p>
+                        <p><strong>Email:</strong> ${b.customerEmail || "-"}</p>
+                        <p><strong>Message:</strong> ${b.message || "-"}</p>
+                    </div>
 
-          <div class="dashboard-card-body">
-            <p><strong>Date:</strong> ${b.date}</p>
-            <p><strong>Time:</strong> ${b.time}</p>
-            <p><strong>Address:</strong> ${b.address}</p>
-            <p><strong>Note:</strong> ${b.note || ""}</p>
-            <p><strong>Created:</strong> ${b.createdAt}</p>
-          </div>
+                    <div class="dashboard-card-actions">
+                        <button onclick="deleteBooking(${b.id})" class="btn">Delete</button>
+                    </div>
+                `;
 
-          <div class="dashboard-card-actions">
-            <a href="edit.html?id=${b.id}&from=company" class="btn">✏️ Edit</a>
-            <button onclick="deleteBooking(${b.id})" class="btn">🗑 Delete</button>
-          </div>
-        `;
-
-                list.appendChild(div);
+                list.appendChild(card);
             });
         }
 
