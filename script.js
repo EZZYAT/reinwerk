@@ -30,7 +30,6 @@ function $(id) {
     const daysEl = document.getElementById("days");
     if (!daysEl) return;
 
-    // ضع هنا تاريخ نهاية العد التنازلي
     const endDate = new Date("2026-05-08T23:59:59").getTime();
 
     function updateCountdown() {
