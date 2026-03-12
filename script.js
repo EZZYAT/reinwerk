@@ -28,39 +28,53 @@ function $(id) {
 // ===== COUNTDOWN =====
 (function initCountdown() {
     const daysEl = document.getElementById("days");
-    if (!daysEl) return;
+    const hoursEl = document.getElementById("hours");
+    const minutesEl = document.getElementById("minutes");
+    const secondsEl = document.getElementById("seconds");
 
-    const endDate = new Date("2026-05-08T23:59:59").getTime();
+    const countdownDays = 90; // 3 أشهر تقريبًا
+    const now = new Date();
+    const targetDate = new Date(now.getTime() + countdownDays * 24 * 60 * 60 * 1000);
 
     function updateCountdown() {
-        const now = Date.now();
-        const diff = endDate - now;
+        const currentTime = new Date().getTime();
+        const distance = targetDate.getTime() - currentTime;
 
-        if (diff <= 0) {
-            daysEl.textContent = "0";
+        if (distance <= 0) {
+            if (daysEl) daysEl.textContent = "0";
+            if (hoursEl) hoursEl.textContent = "0";
+            if (minutesEl) minutesEl.textContent = "0";
+            if (secondsEl) secondsEl.textContent = "0";
+            clearInterval(timer);
             return;
         }
 
-        const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-        daysEl.textContent = String(days);
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        if (daysEl) daysEl.textContent = String(days);
+        if (hoursEl) hoursEl.textContent = String(hours).padStart(2, "0");
+        if (minutesEl) minutesEl.textContent = String(minutes).padStart(2, "0");
+        if (secondsEl) secondsEl.textContent = String(seconds).padStart(2, "0");
     }
 
     updateCountdown();
-    setInterval(updateCountdown, 1000 * 60);
-})();
+    const timer = setInterval(updateCountdown, 1000);
 
-// ===== INDEX: RENDER COMPANIES =====
-function renderCompanies(list) {
-    const container = $("companies");
-    if (!container) return;
+    // ===== INDEX: RENDER COMPANIES =====
+    function renderCompanies(list) {
+        const container = $("companies");
+        if (!container) return;
 
-    container.innerHTML = "";
+        container.innerHTML = "";
 
-    list.forEach((company) => {
-        const card = document.createElement("div");
-        card.className = "company-card";
+        list.forEach((company) => {
+            const card = document.createElement("div");
+            card.className = "company-card";
 
-        card.innerHTML = `
+            card.innerHTML = `
       <div class="company-info">
         <h3>${company.name}</h3>
 
@@ -79,145 +93,145 @@ function renderCompanies(list) {
       <img class="company-thumb" src="${company.image}" alt="${company.name}">
     `;
 
-        container.appendChild(card);
-    });
-}
-
-// ===== LOAD COMPANIES =====
-async function loadCompanies() {
-    try {
-        const res = await fetch(`${API_BASE}/api/companies`);
-        const data = await res.json();
-
-        companies = Array.isArray(data) ? data : [];
-
-        renderCompanies(companies);
-        initSearch();
-        initProfile();
-    } catch (error) {
-        console.error("Error loading companies:", error);
-    }
-}
-
-// ===== SEARCH =====
-function initSearch() {
-    const searchInput = $("search");
-    const container = $("companies");
-
-    if (!searchInput || !container) return;
-
-    searchInput.addEventListener("input", () => {
-        const v = searchInput.value.toLowerCase().trim();
-
-        const filtered = companies.filter((c) =>
-            (c.name || "").toLowerCase().includes(v) ||
-            (c.district || "").toLowerCase().includes(v) ||
-            (c.services || []).join(" ").toLowerCase().includes(v)
-        );
-
-        renderCompanies(filtered);
-    });
-}
-
-// ===== PROFILE PAGE =====
-async function initProfile() {
-    const profileBox = $("profileBox");
-    if (!profileBox) return;
-
-    const params = new URLSearchParams(window.location.search);
-    const id = params.get("id");
-
-    if (!id) {
-        $("pName").textContent = "Firma nicht gefunden";
-        $("pAbout").textContent = "Bitte zurück zur Liste.";
-        return;
+            container.appendChild(card);
+        });
     }
 
-    try {
-        const res = await fetch(`/api/companies/${id}`);
-        if (!res.ok) throw new Error("Company not found");
+    // ===== LOAD COMPANIES =====
+    async function loadCompanies() {
+        try {
+            const res = await fetch(`${API_BASE}/api/companies`);
+            const data = await res.json();
 
-        const company = await res.json();
+            companies = Array.isArray(data) ? data : [];
 
-        if ($("pName")) $("pName").textContent = company.name;
-        if ($("pAbout")) $("pAbout").textContent = company.description;
-        if ($("pDistrict")) $("pDistrict").textContent = company.district;
-        if ($("pType")) $("pType").textContent = company.type === "team" ? "Team" : "Einzelperson";
-        if ($("pTeam")) $("pTeam").textContent = `Teamgröße: ${company.teamSize || 1}`;
-        if ($("pTeamSize")) $("pTeamSize").textContent = company.teamSize || 1;
-        if ($("pPrice")) $("pPrice").textContent = company.price;
-        if ($("pRating")) $("pRating").textContent = company.rating;
-        if ($("pExperience")) $("pExperience").textContent = company.experience || "—";
-        if ($("pAvailability")) $("pAvailability").textContent = company.availability || "—";
-        if ($("pPhone")) $("pPhone").textContent = company.phone;
-        if ($("pLang")) $("pLang").textContent = (company.languages || []).join(", ");
+            renderCompanies(companies);
+            initSearch();
+            initProfile();
+        } catch (error) {
+            console.error("Error loading companies:", error);
+        }
+    }
 
-        if ($("pCall")) $("pCall").href = `tel:${company.phone}`;
-        if ($("pImage")) $("pImage").src = company.image;
+    // ===== SEARCH =====
+    function initSearch() {
+        const searchInput = $("search");
+        const container = $("companies");
 
-        const ul = $("pServices");
-        if (ul) {
-            ul.innerHTML = "";
-            (company.services || []).forEach((s) => {
-                const li = document.createElement("li");
-                li.textContent = s;
-                ul.appendChild(li);
-            });
+        if (!searchInput || !container) return;
+
+        searchInput.addEventListener("input", () => {
+            const v = searchInput.value.toLowerCase().trim();
+
+            const filtered = companies.filter((c) =>
+                (c.name || "").toLowerCase().includes(v) ||
+                (c.district || "").toLowerCase().includes(v) ||
+                (c.services || []).join(" ").toLowerCase().includes(v)
+            );
+
+            renderCompanies(filtered);
+        });
+    }
+
+    // ===== PROFILE PAGE =====
+    async function initProfile() {
+        const profileBox = $("profileBox");
+        if (!profileBox) return;
+
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get("id");
+
+        if (!id) {
+            $("pName").textContent = "Firma nicht gefunden";
+            $("pAbout").textContent = "Bitte zurück zur Liste.";
+            return;
         }
 
-        // ===== BOOKING =====
-        const form = $("bookingForm");
-        const msg = $("bookingMsg");
+        try {
+            const res = await fetch(`/api/companies/${id}`);
+            if (!res.ok) throw new Error("Company not found");
 
-        if (form && msg) {
-            form.addEventListener("submit", async (e) => {
-                e.preventDefault();
+            const company = await res.json();
 
-                const payload = {
-                    companyId: Number(company.id),
-                    customerName: $("bName")?.value?.trim() || "",
-                    customerPhone: $("bPhone")?.value?.trim() || "",
-                    customerEmail: $("bEmail")?.value?.trim() || "",
-                    service: $("bService")?.value?.trim() || "",
-                    bookingDate: $("bDate")?.value || "",
-                    bookingTime: $("bTime")?.value || "",
-                    message: [
-                        $("bAddress")?.value?.trim() || "",
-                        $("bNote")?.value?.trim() || ""
-                    ].filter(Boolean).join(" | ")
-                };
+            if ($("pName")) $("pName").textContent = company.name;
+            if ($("pAbout")) $("pAbout").textContent = company.description;
+            if ($("pDistrict")) $("pDistrict").textContent = company.district;
+            if ($("pType")) $("pType").textContent = company.type === "team" ? "Team" : "Einzelperson";
+            if ($("pTeam")) $("pTeam").textContent = `Teamgröße: ${company.teamSize || 1}`;
+            if ($("pTeamSize")) $("pTeamSize").textContent = company.teamSize || 1;
+            if ($("pPrice")) $("pPrice").textContent = company.price;
+            if ($("pRating")) $("pRating").textContent = company.rating;
+            if ($("pExperience")) $("pExperience").textContent = company.experience || "—";
+            if ($("pAvailability")) $("pAvailability").textContent = company.availability || "—";
+            if ($("pPhone")) $("pPhone").textContent = company.phone;
+            if ($("pLang")) $("pLang").textContent = (company.languages || []).join(", ");
 
-                try {
-                    const bookingRes = await fetch(`${API_BASE}/api/bookings`, {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify(payload)
-                    });
+            if ($("pCall")) $("pCall").href = `tel:${company.phone}`;
+            if ($("pImage")) $("pImage").src = company.image;
 
-                    const data = await bookingRes.json().catch(() => ({}));
+            const ul = $("pServices");
+            if (ul) {
+                ul.innerHTML = "";
+                (company.services || []).forEach((s) => {
+                    const li = document.createElement("li");
+                    li.textContent = s;
+                    ul.appendChild(li);
+                });
+            }
 
-                    if (!bookingRes.ok) {
-                        msg.textContent = "❌ " + (data.message || "حدث خطأ أثناء إرسال الحجز");
-                        return;
+            // ===== BOOKING =====
+            const form = $("bookingForm");
+            const msg = $("bookingMsg");
+
+            if (form && msg) {
+                form.addEventListener("submit", async (e) => {
+                    e.preventDefault();
+
+                    const payload = {
+                        companyId: Number(company.id),
+                        customerName: $("bName")?.value?.trim() || "",
+                        customerPhone: $("bPhone")?.value?.trim() || "",
+                        customerEmail: $("bEmail")?.value?.trim() || "",
+                        service: $("bService")?.value?.trim() || "",
+                        bookingDate: $("bDate")?.value || "",
+                        bookingTime: $("bTime")?.value || "",
+                        message: [
+                            $("bAddress")?.value?.trim() || "",
+                            $("bNote")?.value?.trim() || ""
+                        ].filter(Boolean).join(" | ")
+                    };
+
+                    try {
+                        const bookingRes = await fetch(`${API_BASE}/api/bookings`, {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify(payload)
+                        });
+
+                        const data = await bookingRes.json().catch(() => ({}));
+
+                        if (!bookingRes.ok) {
+                            msg.textContent = "❌ " + (data.message || "حدث خطأ أثناء إرسال الحجز");
+                            return;
+                        }
+
+                        msg.textContent = "✅ تم إرسال طلب الحجز بنجاح";
+                        form.reset();
+                    } catch (err) {
+                        msg.textContent = "❌ حدث خطأ أثناء إرسال الحجز";
+                        console.error(err);
                     }
+                });
+            }
 
-                    msg.textContent = "✅ تم إرسال طلب الحجز بنجاح";
-                    form.reset();
-                } catch (err) {
-                    msg.textContent = "❌ حدث خطأ أثناء إرسال الحجز";
-                    console.error(err);
-                }
-            });
+        } catch (e) {
+            if ($("pName")) $("pName").textContent = "Firma nicht gefunden";
+            if ($("pAbout")) $("pAbout").textContent = "Bitte zurück zur Liste.";
+            console.error(e);
         }
-
-    } catch (e) {
-        if ($("pName")) $("pName").textContent = "Firma nicht gefunden";
-        if ($("pAbout")) $("pAbout").textContent = "Bitte zurück zur Liste.";
-        console.error(e);
     }
-}
 
-// ===== START =====
-loadCompanies();
+    // ===== START =====
+    loadCompanies();
