@@ -18,19 +18,132 @@ function $(id) {
     });
 
     if (navToggle && navLinks) {
-        navToggle.addEventListener("click", () => navLinks.classList.toggle("open"));
+        navToggle.addEventListener("click", () => {
+            navLinks.classList.toggle("open");
+        });
+
         navLinks.querySelectorAll("a").forEach((a) => {
-            a.addEventListener("click", () => navLinks.classList.remove("open"));
+            a.addEventListener("click", () => {
+                navLinks.classList.remove("open");
+            });
         });
     }
 })();
 
+// ===== NAVBAR PROFILE =====
+async function loadNavbarProfile() {
+    const navProfile = $("navProfile");
+    const navLoginBtn = $("navLoginBtn");
+
+    const navProfileImage = $("navProfileImage");
+    const navProfileName = $("navProfileName");
+    const navProfileType = $("navProfileType");
+    const navProfileLink = $("navProfileLink");
+    const navDashboardLink = $("navDashboardLink");
+    const navLogoutBtn = $("navLogoutBtn");
+
+    if (!navProfile) return;
+
+    try {
+        // ===== USER =====
+        const userRes = await fetch(`${API_BASE}/api/user/me`, {
+            credentials: "include"
+        });
+
+        if (userRes.ok) {
+            const user = await userRes.json();
+
+            if (navLoginBtn) navLoginBtn.style.display = "none";
+            navProfile.style.display = "flex";
+
+            if (navProfileImage) {
+                navProfileImage.src = user.image || "https://via.placeholder.com/80?text=User";
+            }
+            if (navProfileName) {
+                navProfileName.textContent = user.name || "User";
+            }
+            if (navProfileType) {
+                navProfileType.textContent = "Kunde";
+            }
+            if (navProfileLink) {
+                navProfileLink.href = "user-profile.html";
+            }
+            if (navDashboardLink) {
+                navDashboardLink.href = "user-profile.html";
+            }
+            if (navLogoutBtn) {
+                navLogoutBtn.style.display = "block";
+                navLogoutBtn.onclick = async () => {
+                    await fetch(`${API_BASE}/api/logout`, {
+                        method: "POST",
+                        credentials: "include"
+                    });
+                    window.location.href = "index.html";
+                };
+            }
+
+            return;
+        }
+
+        // ===== COMPANY =====
+        const companyRes = await fetch(`${API_BASE}/api/company/me`, {
+            credentials: "include"
+        });
+
+        if (companyRes.ok) {
+            const company = await companyRes.json();
+
+            if (navLoginBtn) navLoginBtn.style.display = "none";
+            navProfile.style.display = "flex";
+
+            if (navProfileImage) {
+                navProfileImage.src = company.image || "https://via.placeholder.com/80?text=Firma";
+            }
+            if (navProfileName) {
+                navProfileName.textContent = company.name || "Company";
+            }
+            if (navProfileType) {
+                navProfileType.textContent = "Firma";
+            }
+            if (navProfileLink) {
+                navProfileLink.href = "company-profile.html";
+            }
+            if (navDashboardLink) {
+                navDashboardLink.href = "company.html";
+            }
+            if (navLogoutBtn) {
+                navLogoutBtn.style.display = "block";
+                navLogoutBtn.onclick = async () => {
+                    await fetch(`${API_BASE}/api/logout`, {
+                        method: "POST",
+                        credentials: "include"
+                    });
+                    window.location.href = "index.html";
+                };
+            }
+
+            return;
+        }
+
+        // ===== GUEST =====
+        navProfile.style.display = "none";
+        if (navLoginBtn) {
+            navLoginBtn.style.display = "inline-flex";
+        }
+
+    } catch (err) {
+        console.error("Navbar profile error:", err);
+        if (navProfile) navProfile.style.display = "none";
+        if (navLoginBtn) navLoginBtn.style.display = "inline-flex";
+    }
+}
+
 // ===== COUNTDOWN =====
 (function initCountdown() {
-    const daysEl = document.getElementById("days");
-    const hoursEl = document.getElementById("hours");
-    const minutesEl = document.getElementById("minutes");
-    const secondsEl = document.getElementById("seconds");
+    const daysEl = $("days");
+    const hoursEl = $("hours");
+    const minutesEl = $("minutes");
+    const secondsEl = $("seconds");
 
     if (!daysEl || !hoursEl || !minutesEl || !secondsEl) return;
 
@@ -117,6 +230,9 @@ function renderCompanies(list) {
 
 // ===== LOAD COMPANIES =====
 async function loadCompanies() {
+    const container = $("companies");
+    if (!container) return;
+
     try {
         const res = await fetch(`${API_BASE}/api/companies`);
         const data = await res.json();
@@ -125,7 +241,6 @@ async function loadCompanies() {
 
         renderCompanies(companies);
         initSearch();
-        initProfile();
     } catch (error) {
         console.error("Error loading companies:", error);
     }
@@ -160,32 +275,32 @@ async function initProfile() {
     const id = params.get("id");
 
     if (!id) {
-        $("pName").textContent = "Firma nicht gefunden";
-        $("pAbout").textContent = "Bitte zurück zur Liste.";
+        if ($("pName")) $("pName").textContent = "Firma nicht gefunden";
+        if ($("pAbout")) $("pAbout").textContent = "Bitte zurück zur Liste.";
         return;
     }
 
     try {
-        const res = await fetch(`/api/companies/${id}`);
+        const res = await fetch(`${API_BASE}/api/companies/${id}`);
         if (!res.ok) throw new Error("Company not found");
 
         const company = await res.json();
 
-        if ($("pName")) $("pName").textContent = company.name;
-        if ($("pAbout")) $("pAbout").textContent = company.description;
-        if ($("pDistrict")) $("pDistrict").textContent = company.district;
+        if ($("pName")) $("pName").textContent = company.name || "-";
+        if ($("pAbout")) $("pAbout").textContent = company.description || "-";
+        if ($("pDistrict")) $("pDistrict").textContent = company.district || "-";
         if ($("pType")) $("pType").textContent = company.type === "team" ? "Team" : "Einzelperson";
-        if ($("pTeam")) $("pTeam").textContent = `Teamgröße: ${company.teamSize || 1}`;
+        if ($("pTeam")) $("pTeam").textContent = company.teamSize || 1;
         if ($("pTeamSize")) $("pTeamSize").textContent = company.teamSize || 1;
-        if ($("pPrice")) $("pPrice").textContent = company.price;
-        if ($("pRating")) $("pRating").textContent = company.rating;
+        if ($("pPrice")) $("pPrice").textContent = company.price || "-";
+        if ($("pRating")) $("pRating").textContent = company.rating ?? "0";
         if ($("pExperience")) $("pExperience").textContent = company.experience || "—";
         if ($("pAvailability")) $("pAvailability").textContent = company.availability || "—";
-        if ($("pPhone")) $("pPhone").textContent = company.phone;
+        if ($("pPhone")) $("pPhone").textContent = company.phone || "-";
         if ($("pLang")) $("pLang").textContent = (company.languages || []).join(", ");
 
-        if ($("pCall")) $("pCall").href = `tel:${company.phone}`;
-        if ($("pImage")) $("pImage").src = company.image;
+        if ($("pCall")) $("pCall").href = company.phone ? `tel:${company.phone}` : "#";
+        if ($("pImage")) $("pImage").src = company.image || "https://via.placeholder.com/400x400?text=ReinWerk";
 
         const ul = $("pServices");
         if (ul) {
@@ -253,5 +368,7 @@ async function initProfile() {
 
 // ===== START =====
 document.addEventListener("DOMContentLoaded", () => {
+    loadNavbarProfile();
     loadCompanies();
+    initProfile();
 });

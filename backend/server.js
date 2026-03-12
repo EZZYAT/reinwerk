@@ -300,6 +300,150 @@ app.post("/api/register-company", async (req, res) => {
         res.status(500).json({ message: "Server error" });
     }
 });
+app.post("/api/register-user", async (req, res) => {
+    try {
+
+        const { name, email, password, phone, image } = req.body;
+
+        if (!name || !email || !password) {
+            return res.status(400).json({
+                message: "Name, email and password are required"
+            });
+        }
+
+        const normalizedEmail = String(email).trim().toLowerCase();
+
+        const { data: existing } = await supabase
+            .from("users")
+            .select("id")
+            .eq("email", normalizedEmail)
+            .maybeSingle();
+
+        if (existing) {
+            return res.status(400).json({
+                message: "Email already exists"
+            });
+        }
+
+        const { data, error } = await supabase
+            .from("users")
+            .insert([{
+                name: String(name).trim(),
+                email: normalizedEmail,
+                password: String(password).trim(),
+                phone: String(phone || "").trim(),
+                image: String(image || "").trim()
+            }])
+            .select()
+            .single();
+
+        if (error) {
+            console.error("REGISTER USER ERROR:", error);
+            return res.status(500).json({
+                message: "Database error"
+            });
+        }
+
+        res.json({
+            message: "User registered successfully",
+            user: data
+        });
+
+    } catch (err) {
+        console.error("REGISTER USER SERVER ERROR:", err);
+        res.status(500).json({ message: "Server error" });
+    }
+});
+app.post("/api/login-user", async (req, res) => {
+    try {
+        const email = (req.body.email || "").trim().toLowerCase();
+        const password = (req.body.password || "").trim();
+
+        if (!email || !password) {
+            return res.status(400).json({
+                message: "Email and password are required"
+            });
+        }
+
+        const { data: user, error } = await supabase
+            .from("users")
+            .select("*")
+            .eq("email", email)
+            .maybeSingle();
+
+        if (error) {
+            console.error("LOGIN USER ERROR:", error);
+            return res.status(500).json({
+                message: "Database error"
+            });
+        }
+
+        if (!user) {
+            return res.status(400).json({
+                message: "Email not found"
+            });
+        }
+
+        if ((user.password || "").trim() !== password) {
+            return res.status(401).json({
+                message: "Wrong password"
+            });
+        }
+
+        req.session.userId = user.id;
+
+        res.json({
+            message: "User logged in",
+
+            userId: user.id,
+            userName: user.name
+        });
+
+    } catch (err) {
+        console.error("LOGIN USER SERVER ERROR:", err);
+        res.status(500).json({ message: "Server error" });
+    }
+});
+app.get("/api/user/me", async (req, res) => {
+    try {
+        if (!req.session.userId) {
+            return res.status(401).json({
+                message: "Not logged in"
+            });
+        }
+
+        const { data: user, error } = await supabase
+            .from("users")
+            .select("*")
+            .eq("id", req.session.userId)
+            .maybeSingle();
+
+        if (error) {
+            console.error("USER ME ERROR:", error);
+            return res.status(500).json({
+                message: "Database error"
+            });
+        }
+
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found"
+            });
+        }
+
+        res.json({
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            phone: user.phone,
+            image: user.image || ""
+        });
+
+    } catch (err) {
+        console.error("USER ME SERVER ERROR:", err);
+        res.status(500).json({ message: "Server error" });
+    }
+});
 
 app.post("/api/reset-password", async (req, res) => {
     try {

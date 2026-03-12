@@ -1024,3 +1024,134 @@ label {
         padding: 18px;
     }
 }
+
+.nav-profile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    position: relative;
+}
+
+.nav-profile-image {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.7);
+}
+
+.nav-profile-info {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.nav-profile-info small {
+    color: #64748b;
+}
+
+.nav-profile-menu {
+    display: none;
+    position: absolute;
+    top: 56px;
+    right: 0;
+    min-width: 180px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 14px;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
+    padding: 10px;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 50;
+}
+
+.nav-profile:hover .nav-profile-menu {
+    display: flex;
+}
+
+.nav-profile-menu a,
+.nav-profile-menu button {
+    background: transparent;
+    border: none;
+    text-align: left;
+    color: #0f172a;
+    text-decoration: none;
+    padding: 8px 10px;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.nav-profile-menu a:hover,
+.nav-profile-menu button:hover {
+    background: rgba(37, 99, 235, 0.08);
+}
+
+.nav-profile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: 16px;
+    background: rgba(255,255,255,0.72);
+    border: 1px solid rgba(255,255,255,0.35);
+    position: relative;
+    cursor: pointer;
+}
+
+.nav-profile-image {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255,255,255,0.7);
+}
+
+.nav-profile-info {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.nav-profile-info small {
+    color: #64748b;
+}
+
+.nav-profile-menu {
+    display: none;
+    position: absolute;
+    top: 56px;
+    right: 0;
+    min-width: 180px;
+    background: rgba(255,255,255,0.95);
+    border-radius: 14px;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
+    padding: 10px;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 50;
+}
+
+.nav-profile:hover .nav-profile-menu {
+    display: flex;
+}
+
+.nav-profile-menu a,
+.nav-profile-menu button {
+    background: transparent;
+    border: none;
+    text-align: left;
+    color: #0f172a;
+    text-decoration: none;
+    padding: 8px 10px;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.nav-profile-menu a:hover,
+.nav-profile-menu button:hover {
+    background: rgba(37, 99, 235, 0.08);
+}
