@@ -366,6 +366,29 @@ async function initProfile() {
     }
 }
 
+function setLang(lang){
+
+    localStorage.setItem("lang",lang);
+    
+    if(lang==="ar"){
+    document.documentElement.dir="rtl";
+    }else{
+    document.documentElement.dir="ltr";
+    }
+    
+    location.reload();
+    }
+    
+    document.addEventListener("DOMContentLoaded",()=>{
+    
+    const lang=localStorage.getItem("lang");
+    
+    if(lang==="ar"){
+    document.documentElement.dir="rtl";
+    }
+    
+    });
+
 // ===== START =====
 document.addEventListener("DOMContentLoaded", () => {
     loadNavbarProfile();

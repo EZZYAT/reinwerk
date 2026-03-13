@@ -14,23 +14,61 @@
 
         <h1>Kunde registrieren</h1>
 
-        <form class="form-card">
+        <form id="registerForm" class="form-card">
 
-            <input type="text" placeholder="Name" required>
+            <input id="name" type="text" placeholder="Name" required>
 
-            <input type="email" placeholder="Email" required>
+            <input id="email" type="email" placeholder="Email" required>
 
-            <input type="password" placeholder="Passwort" required>
+            <input id="password" type="password" placeholder="Passwort" required>
 
-            <input type="tel" placeholder="Telefon">
+            <input id="phone" type="tel" placeholder="Telefon">
 
             <button class="btn btn-primary">Registrieren</button>
 
+            <p id="msg"></p>
+
         </form>
 
-        <a href="index.html">← Zurück</a>
+        <a href="home.html">← Zurück</a>
 
     </div>
+
+    <script>
+        document.getElementById("registerForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const payload = {
+                name: document.getElementById("name").value.trim(),
+                email: document.getElementById("email").value.trim(),
+                password: document.getElementById("password").value.trim(),
+                phone: document.getElementById("phone").value.trim()
+            };
+
+            const msg = document.getElementById("msg");
+
+            const res = await fetch("https://reinwerk.onrender.com/api/register-user", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await res.json().catch(() => ({}));
+
+            if (!res.ok) {
+                msg.textContent = "❌ " + (data.message || "Register failed");
+                return;
+            }
+
+            msg.textContent = "✅ Account created";
+
+            setTimeout(() => {
+                window.location.href = "home.html";
+            }, 1000);
+        });
+    </script>
 
 </body>
 
