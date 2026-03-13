@@ -1255,3 +1255,118 @@ label {
 .nav-profile-menu button:hover {
     background: rgba(37, 99, 235, 0.08);
 }
+
+
+/* ===== WELCOME PAGE CENTER ===== */
+.welcome-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    position: relative;
+    z-index: 2;
+}
+
+.welcome-box {
+    width: 100%;
+    max-width: 760px;
+    text-align: center;
+    padding: 48px 32px;
+    border-radius: 28px;
+}
+
+.welcome-box h1 {
+    margin-bottom: 12px;
+    font-size: clamp(2rem, 4vw, 3.5rem);
+}
+
+.welcome-box p {
+    margin-bottom: 28px;
+    opacity: 0.95;
+    font-size: 1.05rem;
+}
+
+.welcome-box .hero-actions {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* ===== FLOATING CLEANING ITEMS ===== */
+.welcome-floating {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+}
+
+.floating-item {
+    position: absolute;
+    font-size: 2rem;
+    opacity: 0.9;
+    animation: floatCleaning 6s ease-in-out infinite;
+    filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.08));
+}
+
+.item-1 {
+    top: 14%;
+    left: 12%;
+    animation-delay: 0s;
+}
+
+.item-2 {
+    top: 20%;
+    right: 14%;
+    animation-delay: 1s;
+}
+
+.item-3 {
+    bottom: 18%;
+    left: 16%;
+    animation-delay: 2s;
+}
+
+.item-4 {
+    bottom: 14%;
+    right: 16%;
+    animation-delay: 3s;
+}
+
+.item-5 {
+    top: 48%;
+    left: 8%;
+    animation-delay: 1.5s;
+}
+
+.item-6 {
+    top: 55%;
+    right: 8%;
+    animation-delay: 2.5s;
+}
+
+@keyframes floatCleaning {
+
+    0%,
+    100% {
+        transform: translateY(0) rotate(0deg) scale(1);
+    }
+
+    50% {
+        transform: translateY(-18px) rotate(6deg) scale(1.08);
+    }
+}
+
+/* ===== MOBILE ===== */
+@media (max-width: 768px) {
+    .welcome-box {
+        padding: 36px 20px;
+        border-radius: 22px;
+    }
+
+    .floating-item {
+        font-size: 1.6rem;
+    }
+}
