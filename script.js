@@ -389,8 +389,55 @@ function setLang(lang){
     
     });
 
+    const translations = {
+        de: {
+            hero_title: "Reinigungsfirmen in Köln vergleichen",
+            hero_subtitle: "Finden Sie geprüfte Reinigungsunternehmen in Köln.",
+            discover_btn: "Unternehmen entdecken",
+            for_companies_btn: "Für Firmen: 3 Monate gratis"
+        },
+        en: {
+            hero_title: "Compare cleaning companies in Cologne",
+            hero_subtitle: "Find verified cleaning companies in Cologne.",
+            discover_btn: "Explore companies",
+            for_companies_btn: "For companies: 3 months free"
+        },
+        ar: {
+            hero_title: "قارن شركات التنظيف في كولن",
+            hero_subtitle: "اعثر على شركات تنظيف موثوقة في كولن.",
+            discover_btn: "اكتشف الشركات",
+            for_companies_btn: "للشركات: 3 أشهر مجانًا"
+        }
+    };
+    
+    function applyTranslations() {
+        const lang = localStorage.getItem("lang") || "de";
+        const dict = translations[lang] || translations.de;
+    
+        document.documentElement.lang = lang;
+    
+        if (lang === "ar") {
+            document.documentElement.dir = "rtl";
+        } else {
+            document.documentElement.dir = "ltr";
+        }
+    
+        document.querySelectorAll("[data-i18n]").forEach((el) => {
+            const key = el.getAttribute("data-i18n");
+            if (dict[key]) {
+                el.textContent = dict[key];
+            }
+        });
+    }
+    
+    function setLang(lang) {
+        localStorage.setItem("lang", lang);
+        applyTranslations();
+    }
+
 // ===== START =====
 document.addEventListener("DOMContentLoaded", () => {
+    applyTranslations();
     loadNavbarProfile();
     loadCompanies();
     initProfile();
