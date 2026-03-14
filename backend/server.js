@@ -445,6 +445,47 @@ app.get("/api/user/me", async (req, res) => {
     }
 });
 
+app.get("/api/user/bookings", async (req, res) => {
+    try {
+        if (!req.session.userId) {
+            return res.status(401).json({ message: "Not logged in" });
+        }
+
+        const { data, error } = await supabase
+            .from("bookings")
+            .select(`
+                id,
+                booking_date,
+                booking_time,
+                service,
+                message,
+                status,
+                created_at,
+                company_id,
+                companies (
+                    id,
+                    name,
+                    phone,
+                    image,
+                    district,
+                    price
+                )
+            `)
+            .eq("user_id", req.session.userId)
+            .order("created_at", { ascending: false });
+
+        if (error) {
+            console.error("USER BOOKINGS ERROR:", error);
+            return res.status(500).json({ message: "Database error" });
+        }
+
+        res.json(data || []);
+    } catch (err) {
+        console.error("USER BOOKINGS SERVER ERROR:", err);
+        res.status(500).json({ message: "Server error" });
+    }
+}); 
+
 app.post("/api/reset-password", async (req, res) => {
     try {
         const email = (req.body.email || "").trim().toLowerCase();
@@ -664,26 +705,29 @@ app.post("/api/bookings", async (req, res) => {
             service,
             bookingDate,
             bookingTime,
-            message,
+            message
         } = req.body;
 
         if (!companyId || !customerName || !bookingDate || !bookingTime) {
             return res.status(400).json({ message: "Missing required fields" });
         }
 
+        const loggedUserId = req.session.userId || null;
+
         const { data, error } = await supabase
             .from("bookings")
             .insert([
                 {
                     company_id: Number(companyId),
-                    customer_name: String(customerName || "").trim(),
-                    customer_phone: String(customerPhone || "").trim(),
-                    customer_email: String(customerEmail || "").trim(),
-                    service: String(service || "").trim(),
-                    booking_date: String(bookingDate || "").trim(),
-                    booking_time: String(bookingTime || "").trim(),
-                    message: String(message || "").trim(),
-                },
+                    user_id: loggedUserId,
+                    customer_name: customerName,
+                    customer_phone: customerPhone || "",
+                    customer_email: customerEmail || "",
+                    service: service || "",
+                    booking_date: bookingDate,
+                    booking_time: bookingTime,
+                    message: message || ""
+                }
             ])
             .select()
             .single();
@@ -695,8 +739,9 @@ app.post("/api/bookings", async (req, res) => {
 
         res.json({
             message: "Booking created",
-            booking: normalizeBooking(data),
+            booking: data
         });
+
     } catch (err) {
         console.error("CREATE BOOKING SERVER ERROR:", err);
         res.status(500).json({ message: "Server error" });
@@ -876,4 +921,45 @@ app.delete("/api/admin/companies/:id", async (req, res) => {
 
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
+});
+
+app.get("/api/user/bookings", async (req, res) => {
+    try {
+        if (!req.session.userId) {
+            return res.status(401).json({ message: "Not logged in" });
+        }
+
+        const { data, error } = await supabase
+            .from("bookings")
+            .select(`
+                id,
+                booking_date,
+                booking_time,
+                service,
+                message,
+                status,
+                created_at,
+                company_id,
+                companies (
+                    id,
+                    name,
+                    phone,
+                    image,
+                    district,
+                    price
+                )
+            `)
+            .eq("user_id", req.session.userId)
+            .order("created_at", { ascending: false });
+
+        if (error) {
+            console.error("USER BOOKINGS ERROR:", error);
+            return res.status(500).json({ message: "Database error" });
+        }
+
+        res.json(data || []);
+    } catch (err) {
+        console.error("USER BOOKINGS SERVER ERROR:", err);
+        res.status(500).json({ message: "Server error" });
+    }
 });
