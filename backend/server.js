@@ -697,6 +697,7 @@ app.get("/api/companies/:id", async (req, res) => {
 
 app.post("/api/bookings", async (req, res) => {
     try {
+
         const {
             companyId,
             customerName,
@@ -708,33 +709,29 @@ app.post("/api/bookings", async (req, res) => {
             message
         } = req.body;
 
-        if (!companyId || !customerName || !bookingDate || !bookingTime) {
-            return res.status(400).json({ message: "Missing required fields" });
-        }
-
-        const loggedUserId = req.session.userId || null;
+        const userId = req.session.userId || null;
 
         const { data, error } = await supabase
             .from("bookings")
             .insert([
                 {
-                    company_id: Number(companyId),
-                    user_id: loggedUserId,
+                    company_id: companyId,
+                    user_id: userId,
                     customer_name: customerName,
-                    customer_phone: customerPhone || "",
-                    customer_email: customerEmail || "",
-                    service: service || "",
+                    customer_phone: customerPhone,
+                    customer_email: customerEmail,
+                    service,
                     booking_date: bookingDate,
                     booking_time: bookingTime,
-                    message: message || ""
+                    message
                 }
             ])
             .select()
             .single();
 
         if (error) {
-            console.error("CREATE BOOKING ERROR:", error);
-            return res.status(500).json({ message: "Failed to create booking" });
+            console.error("BOOKING ERROR:", error);
+            return res.status(500).json({ message: "Booking failed" });
         }
 
         res.json({
@@ -743,7 +740,7 @@ app.post("/api/bookings", async (req, res) => {
         });
 
     } catch (err) {
-        console.error("CREATE BOOKING SERVER ERROR:", err);
+        console.error("BOOKING SERVER ERROR:", err);
         res.status(500).json({ message: "Server error" });
     }
 });
