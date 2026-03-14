@@ -18,38 +18,31 @@
     <nav class="navbar">
         <div class="nav-container">
 
+            <!-- LOGO -->
             <a href="home.html" class="logo">ReinWerk</a>
 
+            <!-- SEARCH -->
             <div class="nav-search">
-                <input type="text" class="nav-search-input" placeholder="Stadt suchen...">
+                <input id="search" type="text" placeholder="Stadt suchen..." class="nav-search-input">
             </div>
 
-            <div class="nav-links">
-                <a href="home.html">Home</a>
-                <a href="about.html">About</a>
-            </div>
-
-            <div class="nav-lang">
-                <button onclick="setLang('de')">DE</button>
-                <button onclick="setLang('en')">EN</button>
-                <button onclick="setLang('ar')">AR</button>
-            </div>
-
-            <a href="login.html" id="navLoginBtn" class="btn">Login</a>
-
+            <!-- PROFILE -->
             <div id="navProfile" class="nav-profile" style="display:none;">
-                <img id="navProfileImage" src="" alt="Profile" class="nav-profile-image">
+
+                <img id="navProfileImage" src="https://via.placeholder.com/80?text=👤" alt="Profile"
+                    class="nav-profile-image">
 
                 <div class="nav-profile-info">
                     <strong id="navProfileName">User</strong>
-                    <small id="navProfileType">Guest</small>
+                    <small id="navProfileType">Kunde</small>
                 </div>
 
                 <div class="nav-profile-menu">
                     <a id="navProfileLink" href="#">Profil</a>
                     <a id="navDashboardLink" href="#">Dashboard</a>
-                    <button id="navLogoutBtn" type="button">Logout</button>
+                    <button id="navLogoutBtn">Logout</button>
                 </div>
+
             </div>
 
         </div>

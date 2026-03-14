@@ -1540,27 +1540,29 @@ label {
     border-radius: 999px;
     font-size: 0.92rem;
 }
-.nav-lang{
-    display:flex;
-    gap:6px;
-    margin-left:12px;
-    }
-    
-    .nav-lang button{
-    border:none;
-    background:rgba(255,255,255,0.7);
-    padding:6px 10px;
-    border-radius:8px;
-    cursor:pointer;
-    font-size:13px;
-    font-weight:600;
-    }
-    
-    .nav-lang button:hover{
-    background:#2d5bff;
-    color:white;
-    }
-    .nav-container,
+
+.nav-lang {
+    display: flex;
+    gap: 6px;
+    margin-left: 12px;
+}
+
+.nav-lang button {
+    border: none;
+    background: rgba(255, 255, 255, 0.7);
+    padding: 6px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.nav-lang button:hover {
+    background: #2d5bff;
+    color: white;
+}
+
+.nav-container,
 .container,
 main.container {
     max-width: 1280px;
@@ -1590,6 +1592,7 @@ main.container {
 }
 
 @media (max-width: 768px) {
+
     .nav-container,
     .container,
     main.container {
@@ -1606,6 +1609,7 @@ main.container {
         gap: 16px;
     }
 }
+
 .welcome-page {
     min-height: 100vh;
     display: flex;
@@ -1628,9 +1632,9 @@ main.container {
     margin-bottom: 12px;
 }
 
-.welcome-box > p {
+.welcome-box>p {
     margin-bottom: 28px;
-    color: rgba(255,255,255,0.92);
+    color: rgba(255, 255, 255, 0.92);
 }
 
 .welcome-choice-grid {
@@ -1652,7 +1656,7 @@ main.container {
 
 .welcome-choice-card p {
     margin-bottom: 18px;
-    color: rgba(255,255,255,0.9);
+    color: rgba(255, 255, 255, 0.9);
 }
 
 .welcome-choice-actions {
@@ -1671,3 +1675,26 @@ main.container {
         padding: 32px 20px;
     }
 }
+
+
+.nav-search {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.nav-search-input {
+    width: 320px;
+    padding: 10px 14px;
+    border-radius: 20px;
+    border: none;
+    background: #f1f3f6;
+    font-size: 14px;
+}
+
+.nav-search-input:focus {
+    outline: none;
+    background: #e9edf5;
+}
+
+
