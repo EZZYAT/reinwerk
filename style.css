@@ -1606,3 +1606,68 @@ main.container {
         gap: 16px;
     }
 }
+.welcome-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    position: relative;
+    z-index: 2;
+}
+
+.welcome-box {
+    width: 100%;
+    max-width: 1100px;
+    text-align: center;
+    padding: 48px 28px;
+    border-radius: 32px;
+}
+
+.welcome-box h1 {
+    margin-bottom: 12px;
+}
+
+.welcome-box > p {
+    margin-bottom: 28px;
+    color: rgba(255,255,255,0.92);
+}
+
+.welcome-choice-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(280px, 1fr));
+    gap: 24px;
+    margin-top: 24px;
+}
+
+.welcome-choice-card {
+    padding: 24px;
+    border-radius: 24px;
+    text-align: center;
+}
+
+.welcome-choice-card h3 {
+    margin-bottom: 10px;
+}
+
+.welcome-choice-card p {
+    margin-bottom: 18px;
+    color: rgba(255,255,255,0.9);
+}
+
+.welcome-choice-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+    .welcome-choice-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .welcome-box {
+        padding: 32px 20px;
+    }
+}

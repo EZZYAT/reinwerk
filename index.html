@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome – ReinWerk</title>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -15,25 +16,40 @@
         <span class="blob blob-3"></span>
     </div>
 
-    <div class="welcome-floating">
-        <span class="floating-item item-1">🧽</span>
-        <span class="floating-item item-2">🪣</span>
-        <span class="floating-item item-3">🧴</span>
-        <span class="floating-item item-4">🧹</span>
-        <span class="floating-item item-5">✨</span>
-        <span class="floating-item item-6">🫧</span>
-    </div>
-
     <main class="welcome-page">
         <section class="hero glass welcome-box">
+
             <h1>Willkommen bei ReinWerk</h1>
             <p>Wie möchten Sie die Plattform nutzen?</p>
 
-            <div class="hero-actions">
-                <a href="register-user.html" class="btn btn-primary">👤 Kunde registrieren</a>
-                <a href="register-company.html" class="btn">🏢 Firma registrieren</a>
-                <a href="home.html" class="btn">👁️ Als Gast fortfahren</a>
+            <div class="welcome-choice-grid">
+
+                <div class="welcome-choice-card glass">
+                    <h3>👤 Kunde</h3>
+                    <p>Für private Kunden und Buchungen</p>
+
+                    <div class="welcome-choice-actions">
+                        <a href="login-user.html" class="btn btn-primary">Anmelden</a>
+                        <a href="register-user.html" class="btn">Konto erstellen</a>
+                    </div>
+                </div>
+
+                <div class="welcome-choice-card glass">
+                    <h3>🏢 Firma</h3>
+                    <p>Für Reinigungsfirmen und Dashboard</p>
+
+                    <div class="welcome-choice-actions">
+                        <a href="login-company.html" class="btn btn-primary">Anmelden</a>
+                        <a href="register-company.html" class="btn">Konto erstellen</a>
+                    </div>
+                </div>
+
             </div>
+
+            <div style="margin-top:24px;">
+                <a href="home.html" class="btn">Als Gast fortfahren</a>
+            </div>
+
         </section>
     </main>
 
