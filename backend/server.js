@@ -160,7 +160,74 @@ app.post("/api/login-company", async (req, res) => {
         res.status(500).json({ message: "Server error" });
     }
 });
+app.post("/api/login", async (req, res) => {
+    try {
+        const email = (req.body.email || "").trim().toLowerCase();
+        const password = (req.body.password || "").trim();
 
+        if (!email || !password) {
+            return res.status(400).json({
+                message: "Email and password are required"
+            });
+        }
+
+        // ===== TRY USER =====
+        const { data: user, error: userError } = await supabase
+            .from("users")
+            .select("*")
+            .eq("email", email)
+            .maybeSingle();
+
+        if (userError) {
+            console.error("LOGIN USER ERROR:", userError);
+            return res.status(500).json({ message: "Database error" });
+        }
+
+        if (user && (user.password || "").trim() === password) {
+            req.session.userId = user.id;
+            req.session.companyId = null;
+
+            return res.json({
+                message: "User logged in",
+                accountType: "personal",
+                userId: user.id,
+                name: user.name
+            });
+        }
+
+        // ===== TRY COMPANY =====
+        const { data: company, error: companyError } = await supabase
+            .from("companies")
+            .select("*")
+            .eq("email", email)
+            .maybeSingle();
+
+        if (companyError) {
+            console.error("LOGIN COMPANY ERROR:", companyError);
+            return res.status(500).json({ message: "Database error" });
+        }
+
+        if (company && (company.password || "").trim() === password) {
+            req.session.companyId = company.id;
+            req.session.userId = null;
+
+            return res.json({
+                message: "Company logged in",
+                accountType: "company",
+                companyId: company.id,
+                name: company.name
+            });
+        }
+
+        return res.status(401).json({
+            message: "Wrong email or password"
+        });
+
+    } catch (err) {
+        console.error("LOGIN SERVER ERROR:", err);
+        res.status(500).json({ message: "Server error" });
+    }
+});
 app.post("/api/logout", (req, res) => {
     req.session.destroy(() => {
         res.json({ message: "Logged out" });
@@ -959,4 +1026,34 @@ app.get("/api/user/bookings", async (req, res) => {
         console.error("USER BOOKINGS SERVER ERROR:", err);
         res.status(500).json({ message: "Server error" });
     }
+});
+
+app.get("/api/user/bookings", async (req, res) => {
+
+    try {
+
+        if (!req.session.userId) {
+            return res.status(401).json({ message: "Not logged in" });
+        }
+
+        const { data, error } = await supabase
+            .from("bookings")
+            .select("*")
+            .eq("user_id", req.session.userId)
+            .order("id", { ascending: false });
+
+        if (error) {
+            console.error(error);
+            return res.status(500).json({ message: "Database error" });
+        }
+
+        res.json(data || []);
+
+    } catch (err) {
+
+        console.error(err);
+        res.status(500).json({ message: "Server error" });
+
+    }
+
 });

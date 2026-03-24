@@ -50,35 +50,42 @@
         async function loadUserProfile() {
             try {
                 const res = await fetch("/api/user/me");
-
+    
                 if (!res.ok) {
-                    window.location.href = "login-user.html";
+                    window.location.href = "index.html";
                     return;
                 }
-
+    
                 const user = await res.json();
-
+    
                 document.getElementById("userName").textContent = user.name || "User";
                 document.getElementById("userEmail").textContent = user.email || "";
                 document.getElementById("userPhone").textContent = user.phone || "";
                 document.getElementById("userImage").src =
                     user.image || "https://via.placeholder.com/160?text=User";
-
+    
             } catch (err) {
                 console.error("LOAD USER PROFILE ERROR:", err);
             }
         }
-
+    
         async function loadUserBookings() {
             try {
                 const res = await fetch("/api/user/bookings");
-
-                if (!res.ok) return;
-
+    
+                if (!res.ok) {
+                    document.getElementById("userBookings").innerHTML = `
+                        <div class="dashboard-card">
+                            <p>Keine Buchungen gefunden.</p>
+                        </div>
+                    `;
+                    return;
+                }
+    
                 const bookings = await res.json();
                 const container = document.getElementById("userBookings");
                 container.innerHTML = "";
-
+    
                 if (!bookings.length) {
                     container.innerHTML = `
                         <div class="dashboard-card">
@@ -87,15 +94,15 @@
                     `;
                     return;
                 }
-
+    
                 bookings.forEach((b) => {
                     const card = document.createElement("div");
                     card.className = "company-card";
-
+    
                     card.innerHTML = `
                         <div class="company-info">
                             <h3>${b.companies?.name || "Firma"}</h3>
-
+    
                             <div class="company-meta">
                                 <div>📅 ${b.booking_date || "-"}</div>
                                 <div>⏰ ${b.booking_time || "-"}</div>
@@ -103,27 +110,27 @@
                                 <div>📍 ${b.companies?.district || "-"}</div>
                                 <div>📌 ${b.status || "pending"}</div>
                             </div>
-
+    
                             <div class="company-actions">
                                 <a class="btn btn-primary" href="profile.html?id=${b.company_id}">
                                     Firma ansehen
                                 </a>
                             </div>
                         </div>
-
+    
                         <img class="company-thumb"
                              src="${b.companies?.image || 'https://via.placeholder.com/400x250?text=Firma'}"
                              alt="${b.companies?.name || 'Firma'}">
                     `;
-
+    
                     container.appendChild(card);
                 });
-
+    
             } catch (err) {
                 console.error("LOAD USER BOOKINGS ERROR:", err);
             }
         }
-
+    
         loadUserProfile();
         loadUserBookings();
     </script>

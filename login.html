@@ -3,72 +3,72 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Company Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login – ReinWerk</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
+
     <div class="bg-blobs">
         <span class="blob blob-1"></span>
         <span class="blob blob-2"></span>
         <span class="blob blob-3"></span>
     </div>
 
-    <div class="auth-page">
-        <div class="auth-card">
-            <div class="auth-header">
-                <h1>Company Login</h1>
-                <p>Log in to manage your bookings and company dashboard.</p>
-            </div>
+    <main class="container">
 
-            <form id="loginForm" class="auth-form">
-                <label>Email</label>
-                <input id="email" type="email" required placeholder="Enter company email">
+        <h1>Anmelden</h1>
 
-                <label>Password</label>
-                <input id="password" type="password" required placeholder="Enter password">
+        <form id="loginForm" class="glass" style="padding:20px;border-radius:20px;">
+            <input type="email" id="email" placeholder="Email" required>
+            <input type="password" id="password" placeholder="Passwort" required>
 
-                <button type="submit" class="btn btn-primary auth-btn">Login</button>
+            <button class="btn btn-primary" type="submit">Login</button>
 
-                <a href="reset-password.html" class="auth-link">Reset Password</a>
-                <a href="register.html" class="auth-link">Create Company Account</a>
+            <p style="margin-top:16px;">
+                Noch kein Konto?
+                <a href="register.html">Konto erstellen</a>
+            </p>
+        </form>
 
-                <p id="msg" class="auth-msg"></p>
-            </form>
-        </div>
-    </div>
+    </main>
 
     <script>
         document.getElementById("loginForm").addEventListener("submit", async (e) => {
             e.preventDefault();
 
-            const email = document.getElementById("email").value.trim();
-            const password = document.getElementById("password").value;
-            const msg = document.getElementById("msg");
-
-            const res = await fetch("/api/login-company", {
+            const res = await fetch("/api/login", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({ email, password })
+                body: JSON.stringify({
+                    email: document.getElementById("email").value,
+                    password: document.getElementById("password").value
+                })
             });
 
             const data = await res.json();
 
             if (!res.ok) {
-                msg.textContent = "❌ " + (data.message || "Login failed");
-                msg.className = "auth-msg error";
+                alert(data.message || "Login failed");
                 return;
             }
 
-            msg.textContent = "✅ Logged in";
-            msg.className = "auth-msg success";
+            if (data.accountType === "personal") {
+                window.location.href = "user-profile.html";
+                return;
+            }
 
-            window.location.href = "company.html";
+            if (data.accountType === "company") {
+                window.location.href = "company.html";
+                return;
+            }
+
+            window.location.href = "home.html";
         });
     </script>
 
 </body>
-
 </html>

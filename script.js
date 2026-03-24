@@ -138,6 +138,52 @@ async function loadNavbarProfile() {
     }
 }
 
+async function loadUserBookings() {
+
+    const container = document.getElementById("userBookings");
+    if (!container) return;
+
+    try {
+
+        const res = await fetch("/api/user/bookings");
+
+        if (!res.ok) {
+            container.innerHTML = "Keine Buchungen gefunden";
+            return;
+        }
+
+        const bookings = await res.json();
+
+        if (!bookings.length) {
+            container.innerHTML = "Noch keine Buchungen";
+            return;
+        }
+
+        container.innerHTML = "";
+
+        bookings.forEach(b => {
+
+            const card = document.createElement("div");
+            card.className = "booking-card";
+
+            card.innerHTML = `
+                <p><strong>Datum:</strong> ${b.booking_date}</p>
+                <p><strong>Zeit:</strong> ${b.booking_time}</p>
+                <p><strong>Status:</strong> ${b.status || "pending"}</p>
+            `;
+
+            container.appendChild(card);
+
+        });
+
+    } catch (err) {
+
+        console.error("BOOKINGS ERROR:", err);
+
+    }
+
+}
+
 // ===== COUNTDOWN =====
 (function initCountdown() {
     const daysEl = $("days");
@@ -435,6 +481,7 @@ function setLang(lang){
         applyTranslations();
     }
 
+
 // ===== START =====
 document.addEventListener("DOMContentLoaded", () => {
     applyTranslations();
@@ -442,3 +489,49 @@ document.addEventListener("DOMContentLoaded", () => {
     loadCompanies();
     initProfile();
 });
+async function loadUserBookings() {
+
+    const container = document.getElementById("userBookings");
+    if (!container) return;
+
+    try {
+
+        const res = await fetch("/api/user/bookings");
+
+        if (!res.ok) {
+            container.innerHTML = "Bitte anmelden";
+            return;
+        }
+
+        const bookings = await res.json();
+
+        if (!bookings.length) {
+            container.innerHTML = "Keine Buchungen";
+            return;
+        }
+
+        container.innerHTML = "";
+
+        bookings.forEach(b => {
+
+            const card = document.createElement("div");
+            card.className = "booking-card";
+
+            card.innerHTML = `
+                <p><strong>Datum:</strong> ${b.booking_date}</p>
+                <p><strong>Zeit:</strong> ${b.booking_time}</p>
+                <p><strong>Status:</strong> ${b.status || "pending"}</p>
+            `;
+
+            container.appendChild(card);
+
+        });
+
+    } catch (err) {
+
+        console.error(err);
+
+    }
+
+}
+loadUserBookings();
